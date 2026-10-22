@@ -1,0 +1,2756 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwNzIwMjMxNzU2MTUzNzgwMzE2NyIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzQ5ZmIyYWEyZjYwNDkzMmNfc3RlbV9ub3RoaW5nX29zLmh0bWwtOTUyIn0sImV4cCI6MTc5MjYzOTE2MCwiaWF0IjoxNzkyNjM1NTYwLCJhbGciOiJSUzI1NiJ9.duegR_wF1F9HJF4hYsHPooOrJEvb6f1KUZ_J6yr-3i2vSRpq7_k6SVcOhpnTZw2aUeRRcl0uttBdIsPJJctl_7M1LOIP9wyTMdgpLnNkIlSn8qknDhEeB8HB1OKoqjMO1PlbFJ0JNvpmHFnGa--bUzrmOIlra-WshusllHK0zCRiEmKSkBLhCH3h87NtFQInCNTGK8mV00KV8FEEvEO8bDWiBosKU13YcJtan873oKOSOI-2aME-ntHG6OwnAb91YjzbENWaHnlQXCttGAzP5a9C8Le9w7eGskxRuLw9uXYWgkiXiomBdfnz5zTmlouU_iWDl42HKAa7CZnG9nk4eg","c_49fb2aa2f604932c_stem_nothing_os.html-952")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>NOTHING // STEM.OS</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- KaTeX Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+  <!-- Fonts: Inter, Roboto, JetBrains Mono (Gemini Chat Typography) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            oled: '#000000',
+            surface: '#131314',
+            panel: '#1e1f20',
+            border: '#282a2c',
+            nred: '#d71921',
+            nredBright: '#ff0000',
+            muted: '#8e918f'
+          },
+          fontFamily: {
+            dot: ['"Google Sans"', 'Inter', 'Roboto', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', '"Roboto Mono"', 'monospace'],
+            sans: ['"Google Sans"', 'Inter', 'Roboto', 'system-ui', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Sleek OLED & Gemini Chat Typography Styling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #000000;
+      color: #e3e3e3;
+      font-family: 'Google Sans', 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Subtle background grid */
+    .bg-dot-matrix {
+      background-image: radial-gradient(#282a2c 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .ndot-header {
+      font-family: 'Google Sans', 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+      letter-spacing: -0.01em;
+      font-weight: 600;
+    }
+    /* Custom minimalist scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333333;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d71921;
+    }
+    /* Range Slider Nothing Style */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: #262626;
+      border-radius: 2px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #d71921;
+      border: 2px solid #ffffff;
+      margin-top: -7px;
+      cursor: pointer;
+    }
+    .katex-display {
+      margin: 0.6em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+    }
+    canvas {
+      touch-action: none;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Google Sans", Inter, Roboto, system-ui, -apple-system, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:"JetBrains Mono", "Roboto Mono", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.right-0{right:0px}.top-0{top:0px}.bottom-2{bottom:0.5rem}.left-2{left:0.5rem}.z-30{z-index:30}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-6{margin-top:1.5rem}.ml-2{margin-left:0.5rem}.ml-auto{margin-left:auto}.mr-1{margin-right:0.25rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-2{height:0.5rem}.h-3{height:0.75rem}.h-56{height:14rem}.h-full{height:100%}.h-2\.5{height:0.625rem}.h-24{height:6rem}.h-36{height:9rem}.h-5{height:1.25rem}.max-h-\[90vh\]{max-height:90vh}.min-h-screen{min-height:100vh}.min-h-\[160px\]{min-height:160px}.min-h-\[280px\]{min-height:280px}.w-1\.5{width:0.375rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-5{width:1.25rem}.w-full{width:100%}.w-10{width:2.5rem}.w-2\.5{width:0.625rem}.max-w-5xl{max-width:64rem}.max-w-md{max-width:28rem}.max-w-lg{max-width:32rem}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}@keyframes ping{75%, 100%{transform:scale(2);opacity:0}}.animate-ping{animation:ping 1s cubic-bezier(0, 0, 0.2, 1) infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-pointer{cursor:pointer}.cursor-crosshair{cursor:crosshair}.resize-none{resize:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-0\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.125rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-sm{border-radius:0.125rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-t{border-top-width:1px}.border-t-2{border-top-width:2px}.border-dashed{border-style:dashed}.border-border{--tw-border-opacity:1;border-color:rgb(40 42 44 / var(--tw-border-opacity, 1))}.border-border\/50{border-color:rgb(40 42 44 / 0.5)}.border-muted{--tw-border-opacity:1;border-color:rgb(142 145 143 / var(--tw-border-opacity, 1))}.border-nred{--tw-border-opacity:1;border-color:rgb(215 25 33 / var(--tw-border-opacity, 1))}.border-nred\/50{border-color:rgb(215 25 33 / 0.5)}.border-nred\/60{border-color:rgb(215 25 33 / 0.6)}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-nred{--tw-bg-opacity:1;background-color:rgb(215 25 33 / var(--tw-bg-opacity, 1))}.bg-nred\/10{background-color:rgb(215 25 33 / 0.1)}.bg-nred\/20{background-color:rgb(215 25 33 / 0.2)}.bg-oled{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-oled\/95{background-color:rgb(0 0 0 / 0.95)}.bg-panel{--tw-bg-opacity:1;background-color:rgb(30 31 32 / var(--tw-bg-opacity, 1))}.bg-surface{--tw-bg-opacity:1;background-color:rgb(19 19 20 / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-black\/70{background-color:rgb(0 0 0 / 0.7)}.bg-black\/85{background-color:rgb(0 0 0 / 0.85)}.bg-sky-400{--tw-bg-opacity:1;background-color:rgb(56 189 248 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-3{padding-bottom:0.75rem}.pt-2{padding-top:0.5rem}.pt-4{padding-top:1rem}.pt-5{padding-top:1.25rem}.pb-1{padding-bottom:0.25rem}.pt-1{padding-top:0.25rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:"JetBrains Mono", "Roboto Mono", monospace}.font-sans{font-family:"Google Sans", Inter, Roboto, system-ui, -apple-system, sans-serif}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-muted{--tw-text-opacity:1;color:rgb(142 145 143 / var(--tw-text-opacity, 1))}.text-neutral-200{--tw-text-opacity:1;color:rgb(229 229 229 / var(--tw-text-opacity, 1))}.text-neutral-300{--tw-text-opacity:1;color:rgb(212 212 212 / var(--tw-text-opacity, 1))}.text-nred{--tw-text-opacity:1;color:rgb(215 25 33 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-nred\/20{--tw-shadow-color:rgb(215 25 33 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.outline-none{outline:2px solid transparent;outline-offset:2px}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.selection\:bg-nred *::selection{--tw-bg-opacity:1;background-color:rgb(215 25 33 / var(--tw-bg-opacity, 1))}.selection\:text-white *::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.selection\:bg-nred::selection{--tw-bg-opacity:1;background-color:rgb(215 25 33 / var(--tw-bg-opacity, 1))}.selection\:text-white::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:border-white:hover{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.hover\:bg-nred:hover{--tw-bg-opacity:1;background-color:rgb(215 25 33 / var(--tw-bg-opacity, 1))}.hover\:bg-nredBright:hover{--tw-bg-opacity:1;background-color:rgb(255 0 0 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:bg-neutral-200:hover{--tw-bg-opacity:1;background-color:rgb(229 229 229 / var(--tw-bg-opacity, 1))}.hover\:text-black:hover{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.focus\:border-nred:focus{--tw-border-opacity:1;border-color:rgb(215 25 33 / var(--tw-border-opacity, 1))}.focus\:border-white:focus{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:inline-block{display:inline-block}.sm\:hidden{display:none}.sm\:h-64{height:16rem}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:gap-2{gap:0.5rem}.sm\:p-6{padding:1.5rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-base{font-size:1rem;line-height:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}}@media (min-width: 768px){.md\:inline{display:inline}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}}</style></head>
+<body class="min-h-screen flex flex-col font-sans bg-oled text-white selection:bg-nred selection:text-white">
+
+  <!-- TOP INDUSTRIAL STATUS & NAVIGATION BAR -->
+  <header class="sticky top-0 z-30 bg-oled/95 backdrop-blur-md border-b border-border">
+    <div class="max-w-5xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-3 h-3 rounded-full bg-nred animate-pulse"></div>
+        <span class="ndot-header text-base sm:text-lg font-bold tracking-widest text-white">STEM // OS.1</span>
+        <span id="offline-badge" class="hidden sm:inline-block text-[10px] font-mono uppercase px-1.5 py-0.5 border border-border text-muted rounded">
+          LOCAL.PROC
+        </span>
+      </div>
+
+      <!-- Right Slide-Out Drawer Triggers -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Timer Pill (if active) -->
+        <div id="header-timer-pill" class="hidden items-center gap-1.5 px-2.5 py-1 border border-nred bg-nred/10 rounded text-xs font-mono text-white">
+          <span class="w-1.5 h-1.5 rounded-full bg-nred animate-ping"></span>
+          <span id="timer-display">00:00</span>
+        </div>
+
+        <!-- Drawer 1: Graphing & Sci Calc -->
+        <button onclick="openDrawer('calc-drawer')" class="p-2 border border-border bg-surface hover:border-white rounded-lg text-xs font-mono flex items-center gap-1.5 transition" title="Scientific &amp; Graphing Calculator">
+          <i class="fa-solid fa-wave-square text-nred"></i>
+          <span class="hidden md:inline">CALC/PLOT</span>
+        </button>
+
+        <!-- Drawer 2: Formula & SI Constants -->
+        <button onclick="openDrawer('formula-drawer')" class="p-2 border border-border bg-surface hover:border-white rounded-lg text-xs font-mono flex items-center gap-1.5 transition" title="Formula &amp; SI Reference">
+          <i class="fa-solid fa-book-open"></i>
+          <span class="hidden md:inline">FORMULAS</span>
+        </button>
+
+        <!-- Drawer 3: Scratchpad -->
+        <button onclick="openDrawer('scratch-drawer')" class="p-2 border border-border bg-surface hover:border-white rounded-lg text-xs font-mono flex items-center gap-1.5 transition" title="Interactive Scratchpad">
+          <i class="fa-solid fa-pen-nib"></i>
+          <span class="hidden md:inline">SKETCH</span>
+        </button>
+
+        <!-- Drawer 4: Analytics & Weak Points -->
+        <button onclick="openDrawer('stats-drawer')" class="p-2 border border-border bg-surface hover:border-white rounded-lg text-xs font-mono flex items-center gap-1.5 transition" title="Weak Points &amp; Analytics">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span id="streak-pill" class="font-bold text-nred">0</span>
+        </button>
+
+        <!-- PWA Export / Install Modal Trigger -->
+        <button onclick="openModal('pwa-modal')" class="p-2 border border-nred/60 bg-nred/10 hover:bg-nred hover:text-white rounded-lg text-xs font-mono transition" title="Export Offline PWA Files">
+          <i class="fa-solid fa-download"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-4 flex flex-col gap-4">
+
+    <!-- COLLAPSIBLE CONTROL MATRIX (Subject Multi-Select, Difficulty 1-10, Mode, Format) -->
+    <section class="border border-border bg-surface rounded-lg overflow-hidden">
+      <!-- Bar Header -->
+      <div class="px-4 py-2.5 bg-panel border-b border-border flex items-center justify-between cursor-pointer" onclick="toggleConfigPanel()">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="ndot-header text-xs text-muted">PARAMETERS //</span>
+          <span id="summary-subjects" class="text-xs font-mono text-white">PHYS + MATH + CHEM + BIO</span>
+          <span class="text-muted">•</span>
+          <span id="summary-level" class="text-xs font-mono text-nred font-bold">LVL 1-4</span>
+          <span class="text-muted">•</span>
+          <span id="summary-mode" class="text-xs font-mono text-muted">PRACTICE</span>
+        </div>
+        <button class="text-xs font-mono text-muted hover:text-white flex items-center gap-1">
+          <span id="config-toggle-label">CONFIG</span>
+          <i id="config-chevron" class="fa-solid fa-chevron-down transition-transform"></i>
+        </button>
+      </div>
+
+      <!-- Expandable Matrix Body -->
+      <div id="config-matrix-body" class="p-4 space-y-4 border-t border-border/50">
+        
+        <!-- Row 1: Subject Multi-Select -->
+        <div>
+          <label class="block text-[10px] font-mono uppercase tracking-widest text-muted mb-2">
+            01 / ACTIVE DISCIPLINES (MULTI-SELECT)
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="subject-toggles">
+            <button onclick="toggleSubject('physics')" id="subj-btn-physics" class="px-3 py-2 rounded border border-white bg-white text-black font-mono text-xs font-bold flex items-center justify-between transition">
+              <span>PHYSICS</span>
+              <i class="fa-solid fa-atom"></i>
+            </button>
+            <button onclick="toggleSubject('math')" id="subj-btn-math" class="px-3 py-2 rounded border border-white bg-white text-black font-mono text-xs font-bold flex items-center justify-between transition">
+              <span>MATH / ODE</span>
+              <i class="fa-solid fa-square-root-variable"></i>
+            </button>
+            <button onclick="toggleSubject('chemistry')" id="subj-btn-chemistry" class="px-3 py-2 rounded border border-white bg-white text-black font-mono text-xs font-bold flex items-center justify-between transition">
+              <span>CHEMISTRY</span>
+              <i class="fa-solid fa-flask"></i>
+            </button>
+            <button onclick="toggleSubject('biology')" id="subj-btn-biology" class="px-3 py-2 rounded border border-white bg-white text-black font-mono text-xs font-bold flex items-center justify-between transition">
+              <span>BIOLOGY</span>
+              <i class="fa-solid fa-dna"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 2: Academic Level Scale (1 to 10) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border">
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[10px] font-mono uppercase tracking-widest text-muted">
+                02 / ACADEMIC DIFFICULTY TIER (1–10)
+              </label>
+              <span id="level-tier-badge" class="text-xs font-mono text-nred font-bold">LVL 3 // INTRO COLLEGE</span>
+            </div>
+            <div class="flex items-center gap-3 mt-2">
+              <span class="text-xs font-mono text-muted">MIN</span>
+              <input type="range" id="min-level-slider" min="1" max="10" value="1" oninput="updateLevelRange()" class="w-full">
+              <span id="min-level-val" class="text-xs font-mono font-bold w-5 text-center">1</span>
+              <span class="text-xs font-mono text-muted">MAX</span>
+              <input type="range" id="max-level-slider" min="1" max="10" value="5" oninput="updateLevelRange()" class="w-full">
+              <span id="max-level-val" class="text-xs font-mono font-bold w-5 text-center">5</span>
+            </div>
+            <p id="level-description" class="text-[11px] font-mono text-muted mt-1.5">
+              1-3: HS/Pre-Calc/Phys 1010 | 4-6: Calc I-II/Rotational/Thermo | 7-10: ODEs/Lagrangian/Quantum
+            </p>
+          </div>
+
+          <!-- Row 3: Question Format & Mode -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">
+                03 / INPUT FORMAT
+              </label>
+              <select id="format-selector" onchange="updateFormat(this.value)" class="w-full bg-oled border border-border rounded px-2.5 py-2 text-xs font-mono text-white focus:border-nred outline-none">
+                <option value="mixed">MIXED (AUTO)</option>
+                <option value="numeric">NUMERIC (±2% TOL)</option>
+                <option value="mcq">MULTIPLE CHOICE</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">
+                04 / SESSION MODE
+              </label>
+              <select id="mode-selector" onchange="changeStudyMode(this.value)" class="w-full bg-oled border border-border rounded px-2.5 py-2 text-xs font-mono text-white focus:border-nred outline-none">
+                <option value="practice">ENDLESS PRACTICE</option>
+                <option value="timed_practice">PRACTICE + STOPWATCH</option>
+                <option value="exam">EXAM DRILL (10 Qs)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ACTIVE PROBLEM TERMINAL CARD -->
+    <section class="border border-border bg-surface rounded-lg p-4 sm:p-6 relative flex-1 flex flex-col justify-between shadow-2xl">
+      
+      <!-- Top Metadata Strip -->
+      <div>
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-border">
+          <div class="flex items-center gap-2">
+            <span id="q-subject-tag" class="px-2 py-0.5 bg-white text-black font-mono text-[11px] font-bold uppercase rounded-sm">
+              PHYSICS
+            </span>
+            <span id="q-topic-tag" class="px-2 py-0.5 border border-border text-muted font-mono text-[11px] rounded-sm">
+              KINEMATICS
+            </span>
+            <span id="q-level-tag" class="px-2 py-0.5 border border-nred/50 text-nred font-mono text-[11px] font-bold rounded-sm">
+              LVL 02
+            </span>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-xs text-muted">
+            <span id="q-counter">SEQ // #001</span>
+            <button onclick="generateNextProblem()" class="hover:text-white transition" title="Regenerate New Numbers">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Problem Title & Dynamic Vector Diagram Split -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- Left: Question Prompt & Input (7 cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            <h1 id="q-title" class="ndot-header text-lg sm:text-xl text-white leading-snug">
+              PROJECTILE TRAJECTORY ANALYSIS
+            </h1>
+
+            <div id="q-prompt" class="text-sm sm:text-base text-neutral-200 leading-relaxed space-y-2 font-normal">
+              <!-- Populated with KaTeX -->
+            </div>
+
+            <!-- Interactive Answer Zone -->
+            <div id="q-input-zone" class="pt-4">
+              <!-- Populated dynamically (Numeric Input OR 4 MCQ Buttons) -->
+            </div>
+
+            <!-- Progressive Hint Box -->
+            <div id="q-hint-box" class="hidden p-3.5 border border-dashed border-muted bg-panel rounded text-xs font-mono text-neutral-300 space-y-1.5">
+              <!-- Populated when hint clicked -->
+            </div>
+          </div>
+
+          <!-- Right: Bespoke Procedural Vector / Schematic Visualizer (5 cols) -->
+          <div class="lg:col-span-5 flex flex-col border border-border bg-oled rounded-lg overflow-hidden">
+            <div class="px-3 py-1.5 bg-panel border-b border-border flex items-center justify-between text-[10px] font-mono text-muted">
+              <span>FIG.01 // REALTIME SCHEMATIC</span>
+              <span id="fig-caption" class="text-white">VECTOR.SVG</span>
+            </div>
+            <div id="q-diagram-container" class="w-full h-56 sm:h-64 flex items-center justify-center p-2 bg-dot-matrix relative overflow-hidden">
+              <!-- Dynamic SVG / Canvas injected here -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Control Bar -->
+      <div class="mt-6 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button id="btn-hint" onclick="triggerHint()" class="px-3 py-2 border border-border bg-panel hover:border-white rounded text-xs font-mono text-muted hover:text-white transition flex items-center gap-1.5">
+            <i class="fa-regular fa-lightbulb text-nred"></i>
+            <span id="hint-label">HINT [0/2]</span>
+          </button>
+
+          <button onclick="openDrawer('scratch-drawer')" class="px-3 py-2 border border-border bg-panel hover:border-white rounded text-xs font-mono text-muted hover:text-white transition sm:hidden">
+            <i class="fa-solid fa-pen"></i> SKETCH
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button id="btn-submit" onclick="submitUserAnswer()" class="px-5 py-2.5 bg-nred hover:bg-nredBright text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition shadow-lg shadow-nred/20 flex items-center gap-2">
+            <span>VERIFY SOLUTION</span>
+            <i class="fa-solid fa-check"></i>
+          </button>
+
+          <button onclick="generateNextProblem()" class="px-4 py-2.5 border border-white bg-oled hover:bg-white hover:text-black text-white font-mono text-xs font-bold uppercase tracking-wider rounded transition flex items-center gap-2">
+            <span>NEXT</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- COMPREHENSIVE FEEDBACK & DERIVATION TERMINAL (Shown on both Right & Wrong answers) -->
+      <div id="q-feedback-panel" class="hidden mt-6 border-t-2 border-white pt-5 space-y-4">
+        <!-- Populated on submit -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- SLIDE-OUT DRAWER 1: SCIENTIFIC & 2D GRAPHING CALCULATOR               -->
+  <!-- ===================================================================== -->
+  <div id="calc-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xs" onclick="closeDrawers()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-surface border-l border-border flex flex-col shadow-2xl">
+      <!-- Drawer Header -->
+      <div class="p-4 border-b border-border flex items-center justify-between bg-panel">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-nred"></span>
+          <h2 class="ndot-header text-sm font-bold">SCIENTIFIC // 2D PLOTTER</h2>
+        </div>
+        <button onclick="closeDrawers()" class="text-muted hover:text-white font-mono text-xs px-2 py-1 border border-border rounded">
+          ESC [X]
+        </button>
+      </div>
+
+      <!-- Calculator Tabs -->
+      <div class="grid grid-cols-2 border-b border-border font-mono text-xs">
+        <button onclick="switchCalcTab('sci')" id="tab-btn-sci" class="py-2.5 bg-white text-black font-bold">01. SCIENTIFIC</button>
+        <button onclick="switchCalcTab('graph')" id="tab-btn-graph" class="py-2.5 bg-oled text-muted hover:text-white">02. 2D FUNCTION PLOT</button>
+      </div>
+
+      <!-- Tab 1: Scientific Evaluator -->
+      <div id="calc-tab-sci" class="p-4 flex-1 flex flex-col justify-between space-y-4 overflow-y-auto">
+        <div class="bg-oled border border-border rounded-lg p-3 font-mono">
+          <div id="sci-history" class="text-xs text-muted h-12 overflow-y-auto mb-1 space-y-0.5"></div>
+          <input type="text" id="sci-input" placeholder="e.g. sin(pi/4) * sqrt(2) + 9.81*2^2" onkeydown="if(event.key==='Enter') evalSciCalc()" class="w-full bg-transparent text-right text-lg text-white focus:outline-none">
+          <div id="sci-result" class="text-right text-xl font-bold text-nred mt-1">= 0</div>
+        </div>
+
+        <!-- Keypad Grid -->
+        <div class="grid grid-cols-4 gap-1.5 font-mono text-xs flex-1">
+          <button onclick="insSci('sin(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">sin</button>
+          <button onclick="insSci('cos(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">cos</button>
+          <button onclick="insSci('tan(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">tan</button>
+          <button onclick="clearSci()" class="p-2.5 bg-nred/20 border border-nred text-nred font-bold rounded">AC</button>
+
+          <button onclick="insSci('ln(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">ln</button>
+          <button onclick="insSci('log(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">log10</button>
+          <button onclick="insSci('sqrt(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">√</button>
+          <button onclick="insSci('^')" class="p-2.5 bg-panel border border-border rounded hover:border-white">x^y</button>
+
+          <button onclick="insSci('pi')" class="p-2.5 bg-panel border border-border rounded hover:border-white">π</button>
+          <button onclick="insSci('e')" class="p-2.5 bg-panel border border-border rounded hover:border-white">e</button>
+          <button onclick="insSci('(')" class="p-2.5 bg-panel border border-border rounded hover:border-white">(</button>
+          <button onclick="insSci(')')" class="p-2.5 bg-panel border border-border rounded hover:border-white">)</button>
+
+          <button onclick="insSci('7')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">7</button>
+          <button onclick="insSci('8')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">8</button>
+          <button onclick="insSci('9')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">9</button>
+          <button onclick="insSci('/')" class="p-2.5 bg-panel border border-border rounded hover:border-white">÷</button>
+
+          <button onclick="insSci('4')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">4</button>
+          <button onclick="insSci('5')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">5</button>
+          <button onclick="insSci('6')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">6</button>
+          <button onclick="insSci('*')" class="p-2.5 bg-panel border border-border rounded hover:border-white">×</button>
+
+          <button onclick="insSci('1')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">1</button>
+          <button onclick="insSci('2')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">2</button>
+          <button onclick="insSci('3')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">3</button>
+          <button onclick="insSci('-')" class="p-2.5 bg-panel border border-border rounded hover:border-white">−</button>
+
+          <button onclick="insSci('0')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">0</button>
+          <button onclick="insSci('.')" class="p-2.5 bg-oled border border-border rounded hover:border-white text-sm font-bold">.</button>
+          <button onclick="evalSciCalc()" class="p-2.5 bg-nred text-white font-bold rounded hover:bg-nredBright">=</button>
+          <button onclick="insSci('+')" class="p-2.5 bg-panel border border-border rounded hover:border-white">+</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: 2D Function Grapher -->
+      <div id="calc-tab-graph" class="hidden p-4 flex-1 flex flex-col space-y-3 overflow-y-auto">
+        <div class="space-y-2 font-mono text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-nred font-bold w-10">f(x)=</span>
+            <input type="text" id="plot-fx" value="sin(x) * x" oninput="drawGraphPlot()" class="flex-1 bg-oled border border-border rounded px-2.5 py-1.5 text-white focus:border-nred outline-none">
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-white font-bold w-10">g(x)=</span>
+            <input type="text" id="plot-gx" value="0.2 * x^2 - 3" oninput="drawGraphPlot()" class="flex-1 bg-oled border border-border rounded px-2.5 py-1.5 text-white focus:border-white outline-none">
+          </div>
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <span class="text-muted text-[11px]">DOMAIN: <span id="plot-range-label">[-10, 10]</span></span>
+            <div class="flex gap-1">
+              <button onclick="zoomGraph(0.75)" class="px-2 py-1 border border-border bg-panel rounded hover:border-white">ZOOM +</button>
+              <button onclick="zoomGraph(1.35)" class="px-2 py-1 border border-border bg-panel rounded hover:border-white">ZOOM -</button>
+              <button onclick="resetGraphZoom()" class="px-2 py-1 border border-border bg-panel rounded hover:border-white">RESET</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-[280px] border border-border bg-oled rounded-lg relative overflow-hidden">
+          <canvas id="graph-canvas" class="w-full h-full block"></canvas>
+          <div id="graph-coords" class="absolute bottom-2 left-2 text-[10px] font-mono text-muted bg-black/80 px-1.5 py-0.5 rounded">
+            TOUCH/DRAG TO TRACE
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SLIDE-OUT DRAWER 2: FORMULA SHEET & SI CONSTANTS                      -->
+  <!-- ===================================================================== -->
+  <div id="formula-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xs" onclick="closeDrawers()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-lg bg-surface border-l border-border flex flex-col shadow-2xl">
+      <div class="p-4 border-b border-border flex items-center justify-between bg-panel">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-nred"></span>
+          <h2 class="ndot-header text-sm font-bold">SI CONSTANTS // FORMULA CODEX</h2>
+        </div>
+        <button onclick="closeDrawers()" class="text-muted hover:text-white font-mono text-xs px-2 py-1 border border-border rounded">
+          ESC [X]
+        </button>
+      </div>
+
+      <div class="p-3 border-b border-border bg-oled">
+        <input type="text" id="formula-filter-input" oninput="filterFormulaCodex(this.value)" placeholder="SEARCH CODEX (e.g. Maxwell, Gibbs, Nernst, Taylor, Planck)..." class="w-full bg-surface border border-border rounded px-3 py-2 text-xs font-mono text-white focus:border-nred outline-none">
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-5 text-xs" id="codex-container">
+        <!-- SI Constants -->
+        <div class="codex-block space-y-2">
+          <h3 class="font-mono font-bold text-nred uppercase tracking-widest border-b border-border pb-1">00 // UNIVERSAL SI CONSTANTS</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono">
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">SPEED OF LIGHT ($c$)</span>
+              <span>$2.9979 \times 10^8\text{ m/s}$</span>
+            </div>
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">STANDARD GRAVITY ($g$)</span>
+              <span>$9.80665\text{ m/s}^2$</span>
+            </div>
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">PLANCK CONSTANT ($h$)</span>
+              <span>$6.6261 \times 10^{-34}\text{ J}\cdot\text{s}$</span>
+            </div>
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">UNIVERSAL GAS ($R$)</span>
+              <span>$8.3145\text{ J/(mol}\cdot\text{K)}$</span>
+            </div>
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">BOLTZMANN ($k_B$)</span>
+              <span>$1.3806 \times 10^{-23}\text{ J/K}$</span>
+            </div>
+            <div class="p-2 bg-oled border border-border rounded">
+              <span class="text-muted block text-[10px]">FARADAY CONSTANT ($F$)</span>
+              <span>$96{,}485\text{ C/mol}$</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Physics -->
+        <div class="codex-block space-y-2">
+          <h3 class="font-mono font-bold text-white uppercase tracking-widest border-b border-border pb-1">01 // PHYSICS (1010 TO LAGRANGIAN)</h3>
+          <div class="space-y-1.5 bg-oled p-3 border border-border rounded">
+            <p><strong class="text-muted font-mono">Kinematics:</strong> $v = v_0 + at$, $\quad \Delta x = v_0 t + \frac{1}{2}at^2$, $\quad v^2 = v_0^2 + 2a\Delta x$</p>
+            <p><strong class="text-muted font-mono">Rotational Dynamics:</strong> $\tau = I\alpha$, $\quad K_{\text{rot}} = \frac{1}{2}I\omega^2$, $\quad L = I\omega$</p>
+            <p><strong class="text-muted font-mono">RC / RLC Circuits:</strong> $V_C(t) = V_0 e^{-t/(RC)}$, $\quad Z = \sqrt{R^2 + (X_L - X_C)^2}$, $\quad \omega_0 = \frac{1}{\sqrt{LC}}$</p>
+            <p><strong class="text-muted font-mono">Euler-Lagrange Eq:</strong> $\mathcal{L} = T - V$, $\quad \frac{d}{dt}\left(\frac{\partial \mathcal{L}}{\partial \dot{q}_i}\right) - \frac{\partial \mathcal{L}}{\partial q_i} = 0$</p>
+            <p><strong class="text-muted font-mono">Maxwell / EM:</strong> $\nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0}$, $\quad \mathcal{E} = -\frac{d\Phi_B}{dt}$</p>
+          </div>
+        </div>
+
+        <!-- Math -->
+        <div class="codex-block space-y-2">
+          <h3 class="font-mono font-bold text-white uppercase tracking-widest border-b border-border pb-1">02 // MATH (TRIG, CALC, ODEs)</h3>
+          <div class="space-y-1.5 bg-oled p-3 border border-border rounded">
+            <p><strong class="text-muted font-mono">Trig Identities:</strong> $\sin^2\theta + \cos^2\theta = 1$, $\quad \sin(2\theta) = 2\sin\theta\cos\theta$, $\quad \frac{a}{\sin A} = \frac{b}{\sin B}$</p>
+            <p><strong class="text-muted font-mono">Integration by Parts:</strong> $\int u\,dv = uv - \int v\,du$</p>
+            <p><strong class="text-muted font-mono">1st Order Linear ODE:</strong> $y' + P(x)y = Q(x) \implies y(x) = \frac{1}{\mu(x)}\int \mu(x)Q(x)\,dx$, $\mu(x) = e^{\int P(x)dx}$</p>
+            <p><strong class="text-muted font-mono">2nd Order Const Coeff:</strong> $ay'' + by' + cy = 0 \implies ar^2 + br + c = 0$</p>
+          </div>
+        </div>
+
+        <!-- Chemistry -->
+        <div class="codex-block space-y-2">
+          <h3 class="font-mono font-bold text-white uppercase tracking-widest border-b border-border pb-1">03 // CHEMISTRY (THERMO, KINETICS, QUANTUM)</h3>
+          <div class="space-y-1.5 bg-oled p-3 border border-border rounded">
+            <p><strong class="text-muted font-mono">Ideal Gas &amp; Thermo:</strong> $PV = nRT$, $\quad \Delta G = \Delta H - T\Delta S = -RT\ln K_{\text{eq}}$</p>
+            <p><strong class="text-muted font-mono">Henderson-Hasselbalch:</strong> $\text{pH} = \text{p}K_a + \log_{10}\left(\frac{[\text{A}^-]}{[\text{HA}]}\right)$</p>
+            <p><strong class="text-muted font-mono">Arrhenius Rate Law:</strong> $k = A e^{-E_a / (RT)}$, $\quad t_{1/2,\text{1st}} = \frac{\ln 2}{k}$</p>
+            <p><strong class="text-muted font-mono">1D Particle in a Box:</strong> $E_n = \frac{n^2 h^2}{8 m L^2}$</p>
+          </div>
+        </div>
+
+        <!-- Biology -->
+        <div class="codex-block space-y-2">
+          <h3 class="font-mono font-bold text-white uppercase tracking-widest border-b border-border pb-1">04 // BIOLOGY (GENETICS, ENZYMES, BIOPHYSICS)</h3>
+          <div class="space-y-1.5 bg-oled p-3 border border-border rounded">
+            <p><strong class="text-muted font-mono">Hardy-Weinberg Equilibrium:</strong> $p + q = 1$, $\quad p^2 + 2pq + q^2 = 1$</p>
+            <p><strong class="text-muted font-mono">Michaelis-Menten Kinetics:</strong> $v_0 = \frac{V_{\max}[S]}{K_m + [S]}$</p>
+            <p><strong class="text-muted font-mono">Logistic Population Growth:</strong> $\frac{dN}{dt} = rN\left(1 - \frac{N}{K}\right)$</p>
+            <p><strong class="text-muted font-mono">Nernst Membrane Potential:</strong> $E_{\text{ion}} = \frac{RT}{zF}\ln\left(\frac{[\text{Ion}]_{\text{out}}}{[\text{Ion}]_{\text{in}}}\right)$</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SLIDE-OUT DRAWER 3: INTERACTIVE SCRATCHPAD CANVAS                     -->
+  <!-- ===================================================================== -->
+  <div id="scratch-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70" onclick="closeDrawers()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-xl bg-oled border-l border-border flex flex-col shadow-2xl">
+      <div class="p-3 border-b border-border flex items-center justify-between bg-panel">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-nred"></span>
+          <h2 class="ndot-header text-xs font-bold">VECTOR SCRATCHPAD</h2>
+        </div>
+        <div class="flex items-center gap-1.5 font-mono text-xs">
+          <button onclick="setScratchColor('#ffffff')" class="w-5 h-5 rounded-full bg-white border border-border"></button>
+          <button onclick="setScratchColor('#d71921')" class="w-5 h-5 rounded-full bg-nred border border-border"></button>
+          <button onclick="setScratchColor('#38bdf8')" class="w-5 h-5 rounded-full bg-sky-400 border border-border"></button>
+          <button onclick="undoScratch()" class="px-2 py-1 border border-border rounded hover:border-white" title="Undo">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button onclick="clearScratch()" class="px-2 py-1 border border-nred text-nred rounded hover:bg-nred hover:text-white">
+            CLR
+          </button>
+          <button onclick="closeDrawers()" class="px-2 py-1 border border-border text-muted hover:text-white rounded ml-2">
+            [X]
+          </button>
+        </div>
+      </div>
+      <div id="scratch-wrapper" class="flex-1 relative bg-dot-matrix cursor-crosshair">
+        <canvas id="scratch-canvas" class="w-full h-full block"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- SLIDE-OUT DRAWER 4: ANALYTICS, WEAK-POINTS & DB EXPANSION             -->
+  <!-- ===================================================================== -->
+  <div id="stats-drawer" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xs" onclick="closeDrawers()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-lg bg-surface border-l border-border flex flex-col shadow-2xl">
+      <div class="p-4 border-b border-border flex items-center justify-between bg-panel">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-nred"></span>
+          <h2 class="ndot-header text-sm font-bold">DIAGNOSTICS // WEAK-POINT TELEMETRY</h2>
+        </div>
+        <button onclick="closeDrawers()" class="text-muted hover:text-white font-mono text-xs px-2 py-1 border border-border rounded">
+          ESC [X]
+        </button>
+      </div>
+
+      <div class="p-4 flex-1 overflow-y-auto space-y-6">
+        <!-- Top KPIs -->
+        <div class="grid grid-cols-3 gap-2 font-mono text-center">
+          <div class="p-3 bg-oled border border-border rounded">
+            <span class="text-[10px] text-muted block">SOLVED</span>
+            <span id="stat-total-solved" class="text-xl font-bold text-white">0</span>
+          </div>
+          <div class="p-3 bg-oled border border-border rounded">
+            <span class="text-[10px] text-muted block">ACCURACY</span>
+            <span id="stat-total-acc" class="text-xl font-bold text-white">0%</span>
+          </div>
+          <div class="p-3 bg-oled border border-border rounded">
+            <span class="text-[10px] text-muted block">STREAK</span>
+            <span id="stat-best-streak" class="text-xl font-bold text-nred">0</span>
+          </div>
+        </div>
+
+        <!-- Weak-Point Detector -->
+        <div class="p-3.5 bg-oled border border-nred/50 rounded space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-widest text-nred font-bold">
+              <i class="fa-solid fa-triangle-exclamation mr-1"></i> PRIORITY WEAK TOPICS
+            </span>
+          </div>
+          <div id="weak-points-list" class="text-xs font-mono text-neutral-300 space-y-1">
+            Complete at least 3 problems to calibrate topic diagnostics.
+          </div>
+        </div>
+
+        <!-- Subject Breakdown Bars -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-mono uppercase tracking-widest text-muted">DISCIPLINE MASTERY</h3>
+          <div id="subject-telemetry-bars" class="space-y-2.5 font-mono text-xs"></div>
+        </div>
+
+        <!-- External Database & Backup Loader -->
+        <div class="pt-4 border-t border-border space-y-3">
+          <h3 class="text-[10px] font-mono uppercase tracking-widest text-muted">
+            LOCAL STORAGE &amp; EXTERNAL QUESTION BANK (.JSON)
+          </h3>
+          <p class="text-[11px] text-muted">
+            Export your telemetry or load an external precompiled `.json` question bank into offline storage.
+          </p>
+          <div class="flex flex-wrap gap-2 font-mono text-xs">
+            <button onclick="exportTelemetryJSON()" class="px-3 py-2 border border-border bg-oled hover:border-white rounded">
+              <i class="fa-solid fa-copy mr-1"></i> COPY / EXPORT BACKUP
+            </button>
+            <label class="px-3 py-2 border border-border bg-oled hover:border-white rounded cursor-pointer">
+              <i class="fa-solid fa-database mr-1 text-nred"></i> IMPORT JSON BANK
+              <input type="file" accept=".json" onchange="importExternalJSON(event)" class="hidden">
+            </label>
+            <button onclick="wipeTelemetry()" class="px-3 py-2 border border-nred/50 text-nred hover:bg-nred hover:text-white rounded ml-auto">
+              RESET
+            </button>
+          </div>
+          <div id="backup-export-viewer" class="hidden space-y-1.5 pt-2">
+            <div class="flex items-center justify-between text-[10px] font-mono">
+              <span class="text-nred font-bold">COPIED TO CLIPBOARD // BACKUP.JSON</span>
+              <button onclick="document.getElementById('backup-export-viewer').classList.add('hidden')" class="text-muted hover:text-white">[HIDE]</button>
+            </div>
+            <textarea id="backup-export-textarea" readonly="" class="w-full h-24 bg-oled border border-border rounded p-2 text-[10px] font-mono text-neutral-300 focus:outline-none"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: ONE-CLICK OFFLINE PWA INSTALLER / FILE GENERATOR               -->
+  <!-- ===================================================================== -->
+  <div id="pwa-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/85 backdrop-blur-xs" onclick="closeModal('pwa-modal')"></div>
+    <div class="relative w-full max-w-lg bg-surface border border-white rounded-lg p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-border pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-nred"></span>
+          <h3 class="ndot-header text-sm sm:text-base font-bold">CMF PHONE 1 // OFFLINE PWA EXPORTER</h3>
+        </div>
+        <button onclick="closeModal('pwa-modal')" class="text-muted hover:text-white font-mono text-xs">[X]</button>
+      </div>
+
+      <p class="text-xs text-neutral-300 leading-relaxed">
+        Because browser preview sandboxes often block direct file downloads, clicking any file below will <strong>copy the exact code to your clipboard</strong> (and display it below) so you can paste it directly into <strong>GitHub Pages</strong>!
+      </p>
+
+      <div class="grid grid-cols-1 gap-2 font-mono text-xs">
+        <button onclick="exportPWAFile('index.html')" class="p-3 border border-white bg-oled hover:bg-white hover:text-black rounded flex items-center justify-between transition font-bold">
+          <span>01. COPY / GET index.html (Complete App)</span>
+          <i class="fa-solid fa-copy"></i>
+        </button>
+        <button onclick="exportPWAFile('manifest.json')" class="p-3 border border-border bg-oled hover:border-white rounded flex items-center justify-between transition">
+          <span>02. COPY / GET manifest.json (Nothing OS Config)</span>
+          <i class="fa-solid fa-file-code text-nred"></i>
+        </button>
+        <button onclick="exportPWAFile('sw.js')" class="p-3 border border-border bg-oled hover:border-white rounded flex items-center justify-between transition">
+          <span>03. COPY / GET sw.js (Offline Cache Engine)</span>
+          <i class="fa-solid fa-bolt text-nred"></i>
+        </button>
+      </div>
+
+      <!-- Code Inspector & Clipboard Box -->
+      <div id="pwa-code-viewer" class="hidden flex-1 flex flex-col space-y-1.5 min-h-[160px] pt-2 border-t border-border">
+        <div class="flex items-center justify-between font-mono text-[11px]">
+          <span id="pwa-viewer-title" class="text-nred font-bold">COPIED TO CLIPBOARD!</span>
+          <button onclick="copyViewerText()" class="px-2 py-0.5 bg-white text-black font-bold rounded text-[10px] hover:bg-neutral-200">
+            COPY AGAIN
+          </button>
+        </div>
+        <textarea id="pwa-viewer-textarea" readonly="" onclick="this.select()" class="w-full flex-1 h-36 bg-oled border border-border rounded p-2.5 font-mono text-[11px] text-neutral-300 focus:border-white outline-none resize-none"></textarea>
+      </div>
+
+      <div class="p-3 bg-oled border border-border rounded text-[11px] font-mono text-muted space-y-1">
+        <div class="text-white font-bold">QUICK DEPLOY ON GITHUB (NO DOWNLOAD NEEDED):</div>
+        <div>1. On GitHub, click <strong>Add file → Create new file</strong>.</div>
+        <div>2. Name the file (e.g. <code>index.html</code>, <code>manifest.json</code>, or <code>sw.js</code>).</div>
+        <div>3. Paste the copied code directly into the editor and click <strong>Commit changes</strong>!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- CORE PROCEDURAL STEM ENGINE & APPLICATION SCRIPT                      -->
+  <!-- ===================================================================== -->
+  <script>
+    /*************************************************************************
+     * 1. STATE & PERSISTENT TELEMETRY (localStorage)
+     *************************************************************************/
+    const STORAGE_KEY = 'nothing_stem_os_v1';
+
+    let appState = {
+      activeSubjects: ['physics', 'math', 'chemistry', 'biology'],
+      minLevel: 1,
+      maxLevel: 5,
+      format: 'mixed', // 'mixed', 'numeric', 'mcq'
+      mode: 'practice', // 'practice', 'timed_practice', 'exam'
+      sequenceCount: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      examQueue: [],
+      examIndex: 0,
+      examScore: 0,
+      customBank: [], // Supports imported external JSON questions
+      telemetry: {
+        physics: { solved: 0, correct: 0 },
+        math: { solved: 0, correct: 0 },
+        chemistry: { solved: 0, correct: 0 },
+        biology: { solved: 0, correct: 0 },
+        topics: {} // { 'Kinematics': { solved: 2, correct: 1 } }
+      }
+    };
+
+    let currentProblem = null;
+    let selectedMcqIndex = null;
+    let hintsRevealed = 0;
+    let isAnswered = false;
+    let timerInterval = null;
+    let timerSeconds = 0;
+
+    function loadTelemetry() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState.telemetry = parsed.telemetry || appState.telemetry;
+          appState.bestStreak = parsed.bestStreak || 0;
+          appState.customBank = parsed.customBank || [];
+        }
+      } catch (e) {
+        console.warn('Local storage init fallback', e);
+      }
+      updateStreakUI();
+    }
+
+    function saveTelemetry() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          telemetry: appState.telemetry,
+          bestStreak: appState.bestStreak,
+          customBank: appState.customBank
+        }));
+      } catch (e) {}
+      updateStreakUI();
+    }
+
+    function updateStreakUI() {
+      document.getElementById('streak-pill').textContent = appState.currentStreak;
+    }
+
+    /*************************************************************************
+     * 2. DETERMINISTIC PROCEDURAL PROBLEM GENERATORS (LEVELS 1 TO 10)
+     *************************************************************************/
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function randFloat(min, max, decimals = 2) {
+      const val = Math.random() * (max - min) + min;
+      return parseFloat(val.toFixed(decimals));
+    }
+    function buildMcqOptions(correctVal, unitStr = '', isSymbolic = false, customDistractors = []) {
+      if (isSymbolic) {
+        const all = [{ text: correctVal, isCorrect: true }, ...customDistractors.map(d => ({ text: d, isCorrect: false }))];
+        return all.sort(() => Math.random() - 0.5);
+      }
+      const c = Number(correctVal);
+      const base = Math.abs(c) < 0.001 ? 1 : c;
+      const d1 = Number((c + base * 0.25).toPrecision(4));
+      const d2 = Number((c - base * 0.22).toPrecision(4));
+      const d3 = Number((c * 1.45).toPrecision(4));
+      const rawSet = [
+        { text: `${c}${unitStr ? ' ' + unitStr : ''}`, isCorrect: true },
+        { text: `${d1 === c ? c + 2 : d1}${unitStr ? ' ' + unitStr : ''}`, isCorrect: false },
+        { text: `${d2 === c ? c - 1.5 : d2}${unitStr ? ' ' + unitStr : ''}`, isCorrect: false },
+        { text: `${d3 === c ? c * 2 + 1 : d3}${unitStr ? ' ' + unitStr : ''}`, isCorrect: false }
+      ];
+      return rawSet.sort(() => Math.random() - 0.5);
+    }
+
+    const GENERATORS = {
+      /* =========================== PHYSICS =========================== */
+      physics: [
+        // Level 1-3: Inclined Plane / Newton's Laws (Phys 1010)
+        {
+          levels: [1, 2, 3],
+          topic: 'Inclined Plane Dynamics',
+          generate: (lvl) => {
+            const m = randInt(4, 20);
+            const theta = randInt(18, 42);
+            const mu = lvl === 1 ? 0 : randFloat(0.10, 0.30, 2);
+            const g = 9.81;
+            const rad = (theta * Math.PI) / 180;
+            const fGrav = m * g * Math.sin(rad);
+            const fNorm = m * g * Math.cos(rad);
+            const fFric = mu * fNorm;
+            const accel = Math.max(0, (fGrav - fFric) / m);
+            const ans = Number(accel.toFixed(2));
+
+            return {
+              subject: 'physics',
+              topic: 'Inclined Plane Dynamics',
+              level: lvl,
+              title: 'BLOCK ACCELERATION ON AN INCLINE',
+              prompt: `A block of mass $m = ${m}\\text{ kg}$ slides down a ramp inclined at $\\theta = ${theta}^\\circ$ above the horizontal. ${
+                mu === 0 ? 'Assume the surface is frictionless ($\\mu_k = 0$).' : `The coefficient of kinetic friction between the block and ramp is $\\mu_k = ${mu}$.`
+              } Using $g = 9.81\\text{ m/s}^2$, calculate the magnitude of the block's acceleration $a$ down the ramp.`,
+              unit: 'm/s²',
+              answer: ans,
+              options: buildMcqOptions(ans, 'm/s²'),
+              hints: [
+                `Decompose gravity into parallel ($mg\\sin\\theta$) and normal ($mg\\cos\\theta$) components.`,
+                `Apply Newton's Second Law along the ramp: $ma = mg\\sin\\theta - \\mu_k mg\\cos\\theta$.`
+              ],
+              intuition: `Mass cancels out of the incline acceleration equation! Only the slope angle $\\theta$ and friction coefficient $\\mu_k$ govern how fast the object accelerates down the plane.`,
+              derivation: `$$F_{\\parallel} = mg\\sin(${theta}^\\circ) = (${m})(9.81)\\sin(${theta}^\\circ) = ${fGrav.toFixed(2)}\\text{ N}$$
+$$F_{\\text{friction}} = \\mu_k mg\\cos(${theta}^\\circ) = (${mu})(${m})(9.81)\\cos(${theta}^\\circ) = ${fFric.toFixed(2)}\\text{ N}$$
+$$a = \\frac{F_{\\parallel} - F_{\\text{friction}}}{m} = g(\\sin\\theta - \\mu_k\\cos\\theta) = ${ans}\\text{ m/s}^2$$`,
+              diagramType: 'incline',
+              diagramData: { m, theta, mu, accel: ans }
+            };
+          }
+        },
+        // Level 2-4: Projectile Kinematics
+        {
+          levels: [1, 2, 3, 4],
+          topic: '2D Projectile Kinematics',
+          generate: (lvl) => {
+            const v0 = randInt(18, 45);
+            const angle = randInt(25, 65);
+            const g = 9.81;
+            const rad = (angle * Math.PI) / 180;
+            const range = ((v0 * v0) * Math.sin(2 * rad)) / g;
+            const maxH = Math.pow(v0 * Math.sin(rad), 2) / (2 * g);
+            const ans = Number(range.toFixed(2));
+
+            return {
+              subject: 'physics',
+              topic: '2D Projectile Kinematics',
+              level: lvl,
+              title: 'HORIZONTAL RANGE OF PROJECTILE',
+              prompt: `A projectile is launched from flat ground with an initial speed $v_0 = ${v0}\\text{ m/s}$ at an launch angle $\\theta = ${angle}^\\circ$ above the horizontal. Neglecting air resistance ($g = 9.81\\text{ m/s}^2$), determine the total horizontal distance $R$ traveled before impact.`,
+              unit: 'm',
+              answer: ans,
+              options: buildMcqOptions(ans, 'm'),
+              hints: [
+                `Split initial velocity into $v_{0x} = v_0\\cos\\theta$ and $v_{0y} = v_0\\sin\\theta$.`,
+                `Time of flight is $t_{\\text{flight}} = \\frac{2v_0\\sin\\theta}{g}$, or use the range identity $R = \\frac{v_0^2 \\sin(2\\theta)}{g}$.`
+              ],
+              intuition: `Horizontal motion has zero acceleration while vertical motion is governed by constant gravity $g$. Maximum range on flat ground occurs at $45^\\circ$ where $\\sin(2\\theta)=1$.`,
+              derivation: `$$t_{\\text{flight}} = \\frac{2 v_0 \\sin(${angle}^\\circ)}{9.81} = ${((2 * v0 * Math.sin(rad)) / g).toFixed(2)}\\text{ s}$$
+$$R = v_{0x} \\cdot t_{\\text{flight}} = \\frac{v_0^2 \\sin(2\\theta)}{g} = \\frac{${v0}^2 \\sin(${2 * angle}^\\circ)}{9.81} = ${ans}\\text{ m}$$`,
+              diagramType: 'projectile',
+              diagramData: { v0, angle, range: ans, maxH: Number(maxH.toFixed(1)) }
+            };
+          }
+        },
+        // Level 4-6: Rotational Dynamics & RC Circuits
+        {
+          levels: [4, 5, 6],
+          topic: 'RC Transient Circuits',
+          generate: (lvl) => {
+            const R = randInt(10, 80); // kOhm
+            const C = randInt(50, 300); // uF
+            const V0 = randInt(10, 24);
+            const tau = (R * 1000) * (C * 1e-6); // seconds
+            const tEval = Number((tau * randFloat(0.6, 1.4, 2)).toFixed(2));
+            const vt = V0 * Math.exp(-tEval / tau);
+            const ans = Number(vt.toFixed(2));
+
+            return {
+              subject: 'physics',
+              topic: 'RC Transient Circuits',
+              level: lvl,
+              title: 'CAPACITOR DISCHARGE TRANSIENT',
+              prompt: `A capacitor $C = ${C}\\;\\mu\\text{F}$ initially charged to $V_0 = ${V0}\\text{ V}$ is discharged through a resistor $R = ${R}\\text{ k}\\Omega$ starting at $t = 0$. Calculate the remaining voltage $V(t)$ across the capacitor at $t = ${tEval}\\text{ s}$.`,
+              unit: 'V',
+              answer: ans,
+              options: buildMcqOptions(ans, 'V'),
+              hints: [
+                `First find the capacitive time constant $\\tau = R \\cdot C$ in seconds.`,
+                `Use the exponential decay formula $V(t) = V_0 e^{-t/\\tau}$.`
+              ],
+              intuition: `Every one time constant $\\tau = RC$, the voltage across a discharging capacitor drops to $e^{-1} \\approx 36.8\\%$ of its previous value.`,
+              derivation: `$$\\tau = R \\cdot C = (${R}\\times 10^3\\;\\Omega)(${C}\\times 10^{-6}\\text{ F}) = ${tau.toFixed(2)}\\text{ s}$$
+$$V(${tEval}) = ${V0} \\cdot e^{-${tEval} / ${tau.toFixed(2)}} = ${V0} \\cdot e^{-${(tEval / tau).toFixed(3)}} = ${ans}\\text{ V}$$`,
+              diagramType: 'rc_decay',
+              diagramData: { V0, tau: Number(tau.toFixed(2)), tEval, vt: ans }
+            };
+          }
+        },
+        // Level 7-10: Lagrangian / Harmonic Oscillator / Relativistic / EM
+        {
+          levels: [7, 8, 9, 10],
+          topic: 'Lagrangian & Coupled Oscillators',
+          generate: (lvl) => {
+            const m = randInt(2, 8);
+            const k = randInt(40, 200);
+            const b = randFloat(0.5, 2.5, 1); // damping
+            const omega0 = Math.sqrt(k / m);
+            const gamma = b / (2 * m);
+            const omegaD = Math.sqrt(Math.max(0.01, omega0 * omega0 - gamma * gamma));
+            const ans = Number(omegaD.toFixed(3));
+
+            return {
+              subject: 'physics',
+              topic: 'Lagrangian & Coupled Oscillators',
+              level: lvl,
+              title: 'UNDERDAMPED HARMONIC OSCILLATOR QUASI-FREQUENCY',
+              prompt: `A damped harmonic oscillator has Lagrangian $\\mathcal{L} = \\frac{1}{2}m\\dot{x}^2 - \\frac{1}{2}kx^2$ with Rayleigh dissipation function $\\mathcal{F} = \\frac{1}{2}b\\dot{x}^2$. Given mass $m = ${m}\\text{ kg}$, spring constant $k = ${k}\\text{ N/m}$, and damping coefficient $b = ${b}\\text{ N}\\cdot\\text{s/m}$, calculate the underdamped angular oscillation frequency $\\omega_d$ in $\\text{rad/s}$.`,
+              unit: 'rad/s',
+              answer: ans,
+              options: buildMcqOptions(ans, 'rad/s'),
+              hints: [
+                `The equation of motion is $m\\ddot{x} + b\\dot{x} + kx = 0$, or $\\ddot{x} + 2\\gamma\\dot{x} + \\omega_0^2 x = 0$ with $\\gamma = \\frac{b}{2m}$.`,
+                `Compute $\\omega_d = \\sqrt{\\omega_0^2 - \\gamma^2}$ where $\\omega_0 = \\sqrt{k/m}$.`
+              ],
+              intuition: `Damping slightly stretches the oscillation period and reduces the natural frequency $\\omega_0$ by shifting the eigenvalues into the complex plane: $s = -\\gamma \\pm i\\omega_d$.`,
+              derivation: `$$\\omega_0 = \\sqrt{\\frac{k}{m}} = \\sqrt{\\frac{${k}}{${m}}} = ${omega0.toFixed(3)}\\text{ rad/s}$$
+$$\\gamma = \\frac{b}{2m} = \\frac{${b}}{2(${m})} = ${gamma.toFixed(3)}\\text{ s}^{-1}$$
+$$\\omega_d = \\sqrt{\\omega_0^2 - \\gamma^2} = \\sqrt{${(omega0 * omega0).toFixed(3)} - ${(gamma * gamma).toFixed(4)}} = ${ans}\\text{ rad/s}$$`,
+              diagramType: 'damped_wave',
+              diagramData: { omegaD: ans, gamma }
+            };
+          }
+        }
+      ],
+
+      /* =========================== MATH =========================== */
+      math: [
+        // Level 1-3: Pre-Calc & Trigonometry
+        {
+          levels: [1, 2, 3],
+          topic: 'Trigonometry & Law of Cosines',
+          generate: (lvl) => {
+            const a = randInt(6, 15);
+            const b = randInt(8, 18);
+            const angleC = randInt(35, 115);
+            const rad = (angleC * Math.PI) / 180;
+            const c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(rad));
+            const ans = Number(c.toFixed(2));
+
+            return {
+              subject: 'math',
+              topic: 'Trigonometry & Law of Cosines',
+              level: lvl,
+              title: 'OBLIQUE TRIANGLE VECTOR CLOSURE',
+              prompt: `In an oblique triangle $\\triangle ABC$, side $a = ${a}$, side $b = ${b}$, and the included angle is $\\gamma = ${angleC}^\\circ$. Using the Law of Cosines, compute the length of the opposite side $c$.`,
+              unit: '',
+              answer: ans,
+              options: buildMcqOptions(ans, ''),
+              hints: [
+                `Recall the Law of Cosines: $c^2 = a^2 + b^2 - 2ab\\cos(\\gamma)$.`,
+                `Ensure your calculator is in Degree mode when evaluating $\\cos(${angleC}^\\circ)$.`
+              ],
+              intuition: `The Law of Cosines generalizes the Pythagorean theorem $c^2 = a^2 + b^2$ for non-right triangles by subtracting the projection correction $2ab\\cos\\gamma$.`,
+              derivation: `$$c^2 = ${a}^2 + ${b}^2 - 2(${a})(${b})\\cos(${angleC}^\\circ)$$
+$$c^2 = ${a * a + b * b} - ${2 * a * b}(${Math.cos(rad).toFixed(4)}) = ${(c * c).toFixed(2)}$$
+$$c = \\sqrt{${(c * c).toFixed(2)}} = ${ans}$$`,
+              diagramType: 'trig_triangle',
+              diagramData: { a, b, angleC, c: ans }
+            };
+          }
+        },
+        // Level 4-6: Calculus I & II (Definite Integrals & Tangents)
+        {
+          levels: [4, 5, 6],
+          topic: 'Calculus: Definite Integration',
+          generate: (lvl) => {
+            const k = randInt(2, 6);
+            const c = randInt(1, 5);
+            const upper = randInt(2, 4);
+            // Integrate (3*k*x^2 + 2*c*x) from 0 to upper => [k*x^3 + c*x^2]
+            const ans = k * Math.pow(upper, 3) + c * Math.pow(upper, 2);
+
+            return {
+              subject: 'math',
+              topic: 'Calculus: Definite Integration',
+              level: lvl,
+              title: 'AREA UNDER POLYNOMIAL CURVE',
+              prompt: `Evaluate the exact definite integral over the interval $[0, ${upper}]$:
+$$I = \\int_{0}^{${upper}} \\left(${3 * k}x^2 + ${2 * c}x\\right)\\,dx$$`,
+              unit: '',
+              answer: ans,
+              options: buildMcqOptions(ans, ''),
+              hints: [
+                `Find the antiderivative $F(x) = \\int (${3 * k}x^2 + ${2 * c}x)\\,dx = ${k}x^3 + ${c}x^2$.`,
+                `Apply the Fundamental Theorem of Calculus: $F(${upper}) - F(0)$.`
+              ],
+              intuition: `By the Fundamental Theorem of Calculus, accumulating the instantaneous rate of change $f(x)$ over $[0, b]$ equals the net change in the antiderivative $F(b) - F(0)$.`,
+              derivation: `$$F(x) = \\int \\left(${3 * k}x^2 + ${2 * c}x\\right)dx = ${k}x^3 + ${c}x^2 + C$$
+$$I = F(${upper}) - F(0) = ${k}(${upper})^3 + ${c}(${upper})^2 - 0 = ${k * Math.pow(upper, 3)} + ${c * Math.pow(upper, 2)} = ${ans}$$`,
+              diagramType: 'integral_curve',
+              diagramData: { k, c, upper, ans }
+            };
+          }
+        },
+        // Level 7-10: Ordinary Differential Equations (ODEs)
+        {
+          levels: [7, 8, 9, 10],
+          topic: 'Ordinary Differential Equations',
+          generate: (lvl) => {
+            const r = randInt(2, 5);
+            const y0 = randInt(3, 10);
+            const tEval = randFloat(0.4, 1.0, 1);
+            // dy/dt + r*y = 0, y(0) = y0 => y(t) = y0 * e^(-r*t)
+            const val = y0 * Math.exp(-r * tEval);
+            const ans = Number(val.toFixed(3));
+
+            return {
+              subject: 'math',
+              topic: 'Ordinary Differential Equations',
+              level: lvl,
+              title: 'INITIAL VALUE PROBLEM (SEPARABLE / LINEAR ODE)',
+              prompt: `Solve the first-order initial value problem:
+$$\\frac{dy}{dt} + ${r}y = 0, \\quad y(0) = ${y0}$$
+Evaluate the exact solution $y(t)$ at $t = ${tEval}$.`,
+              unit: '',
+              answer: ans,
+              options: buildMcqOptions(ans, ''),
+              hints: [
+                `Separate variables: $\\frac{1}{y}\\,dy = -${r}\\,dt$ or use integrating factor $\\mu(t) = e^{${r}t}$.`,
+                `Apply $y(0) = ${y0}$ to get $y(t) = ${y0}e^{-${r}t}$.`
+              ],
+              intuition: `Whenever the rate of decay $\\frac{dy}{dt}$ is directly proportional to the current state $y$, the system follows pure exponential relaxation across the slope field.`,
+              derivation: `$$\\frac{dy}{y} = -${r}\\,dt \\implies \\ln|y| = -${r}t + C \\implies y(t) = y_0 e^{-${r}t}$$
+$$y(${tEval}) = ${y0} e^{-${r}(${tEval})} = ${y0} e^{-${(r * tEval).toFixed(2)}} = ${ans}$$`,
+              diagramType: 'slope_field',
+              diagramData: { r, y0, tEval, ans }
+            };
+          }
+        }
+      ],
+
+      /* =========================== CHEMISTRY =========================== */
+      chemistry: [
+        // Level 1-3: Ideal Gas Law & Stoichiometry
+        {
+          levels: [1, 2, 3],
+          topic: 'Ideal Gas Law & Thermo',
+          generate: (lvl) => {
+            const n = randFloat(1.2, 4.5, 1);
+            const T = randInt(275, 420);
+            const V = randFloat(12.0, 35.0, 1); // Liters
+            const R = 0.08206; // L atm / (mol K)
+            const P = (n * R * T) / V;
+            const ans = Number(P.toFixed(2));
+
+            return {
+              subject: 'chemistry',
+              topic: 'Ideal Gas Law & Thermo',
+              level: lvl,
+              title: 'ISOTHERMAL GAS PRESSURE CALCULATION',
+              prompt: `A rigid reaction vessel of volume $V = ${V}\\text{ L}$ contains $n = ${n}\\text{ mol}$ of an ideal gas maintained at temperature $T = ${T}\\text{ K}$. Using $R = 0.08206\\text{ L}\\cdot\\text{atm}/(\\text{mol}\\cdot\\text{K})$, calculate the internal pressure $P$ in atmospheres ($\\text{atm}$).`,
+              unit: 'atm',
+              answer: ans,
+              options: buildMcqOptions(ans, 'atm'),
+              hints: [
+                `Apply the Ideal Gas Law: $PV = nRT$.`,
+                `Solve for pressure: $P = \\frac{nRT}{V}$.`
+              ],
+              intuition: `On a $P$-$V$ isotherm, compressing volume $V$ increases particle collision frequency with the container walls, raising pressure $P \\propto 1/V$.`,
+              derivation: `$$P = \\frac{nRT}{V} = \\frac{(${n}\\text{ mol})(0.08206)(${T}\\text{ K})}{${V}\\text{ L}} = ${ans}\\text{ atm}$$`,
+              diagramType: 'pv_isotherm',
+              diagramData: { n, T, V, P: ans }
+            };
+          }
+        },
+        // Level 4-6: Buffers, Acid-Base Titration & Gibbs Free Energy
+        {
+          levels: [4, 5, 6],
+          topic: 'Buffer Equilibrium & pH',
+          generate: (lvl) => {
+            const pKa = randFloat(3.8, 7.2, 2);
+            const acidM = randFloat(0.10, 0.50, 2);
+            const baseM = randFloat(0.15, 0.65, 2);
+            const pH = pKa + Math.log10(baseM / acidM);
+            const ans = Number(pH.toFixed(2));
+
+            return {
+              subject: 'chemistry',
+              topic: 'Buffer Equilibrium & pH',
+              level: lvl,
+              title: 'HENDERSON-HASSELBALCH BUFFER EQUILIBRIUM',
+              prompt: `An aqueous buffer solution is prepared using a weak acid $\\text{HA}$ ($\\text{p}K_a = ${pKa}$) at concentration $[\\text{HA}] = ${acidM}\\text{ M}$ and its conjugate base salt $\\text{NaA}$ at $[\\text{A}^-] = ${baseM}\\text{ M}$. Calculate the resulting $\\text{pH}$ of the solution.`,
+              unit: 'pH',
+              answer: ans,
+              options: buildMcqOptions(ans, ''),
+              hints: [
+                `Use the Henderson-Hasselbalch equation: $\\text{pH} = \\text{p}K_a + \\log_{10}\\left(\\frac{[\\text{A}^-]}{[\\text{HA}]}\\right)$.`,
+                `When $[\\text{A}^-] > [\\text{HA}]$, the $\\log_{10}$ term is positive and $\\text{pH} > \\text{p}K_a$.`
+              ],
+              intuition: `Buffers resist $\\text{pH}$ swings hardest when $[\\text{A}^-] = [\\text{HA}]$, right at the flat inflection zone of the titration curve where $\\text{pH} = \\text{p}K_a$.`,
+              derivation: `$$\\text{pH} = \\text{p}K_a + \\log_{10}\\left(\\frac{[\\text{A}^-]}{[\\text{HA}]}\\right) = ${pKa} + \\log_{10}\\left(\\frac{${baseM}}{${acidM}}\\right)$$
+$$\\text{pH} = ${pKa} + (${Math.log10(baseM / acidM).toFixed(3)}) = ${ans}$$`,
+              diagramType: 'titration_curve',
+              diagramData: { pKa, pH: ans }
+            };
+          }
+        },
+        // Level 7-10: Chemical Kinetics / Arrhenius / Quantum Box
+        {
+          levels: [7, 8, 9, 10],
+          topic: 'Physical Chemistry & Kinetics',
+          generate: (lvl) => {
+            const Ea = randInt(40, 85); // kJ/mol
+            const T1 = 300;
+            const T2 = randInt(325, 360);
+            const R = 8.3145;
+            // ln(k2/k1) = (Ea*1000 / R) * (1/T1 - 1/T2)
+            const lnRatio = ((Ea * 1000) / R) * (1 / T1 - 1 / T2);
+            const ratio = Math.exp(lnRatio);
+            const ans = Number(ratio.toFixed(2));
+
+            return {
+              subject: 'chemistry',
+              topic: 'Physical Chemistry & Kinetics',
+              level: lvl,
+              title: 'ARRHENIUS ACTIVATION BARRIER & RATE RATIO',
+              prompt: `A chemical reaction has an activation energy barrier of $E_a = ${Ea}\\text{ kJ/mol}$. By what factor ($k_2 / k_1$) does the rate constant increase when the temperature is raised from $T_1 = ${T1}\\text{ K}$ to $T_2 = ${T2}\\text{ K}$? (Use $R = 8.3145\\text{ J/(mol}\\cdot\\text{K)}$).`,
+              unit: '×',
+              answer: ans,
+              options: buildMcqOptions(ans, '×'),
+              hints: [
+                `Convert $E_a$ to $\\text{J/mol}$: $E_a = ${Ea * 1000}\\text{ J/mol}$.`,
+                `Use the two-temperature Arrhenius equation: $\\ln\\left(\\frac{k_2}{k_1}\\right) = \\frac{E_a}{R}\\left(\\frac{1}{T_1} - \\frac{1}{T_2}\\right)$.`
+              ],
+              intuition: `Because temperature sits in the exponential denominator $e^{-E_a/RT}$, even a modest temperature rise exponentially increases the fraction of molecules exceeding the activation barrier $E_a$.`,
+              derivation: `$$\\ln\\left(\\frac{k_2}{k_1}\\right) = \\frac{${Ea}\\times 10^3}{8.3145}\\left(\\frac{1}{${T1}} - \\frac{1}{${T2}}\\right) = ${lnRatio.toFixed(3)}$$
+$$\\frac{k_2}{k_1} = e^{${lnRatio.toFixed(3)}} = ${ans}$$`,
+              diagramType: 'activation_energy',
+              diagramData: { Ea, ratio: ans }
+            };
+          }
+        }
+      ],
+
+      /* =========================== BIOLOGY =========================== */
+      biology: [
+        // Level 1-3: Mendelian Genetics & Hardy-Weinberg
+        {
+          levels: [1, 2, 3],
+          topic: 'Genetics & Hardy-Weinberg',
+          generate: (lvl) => {
+            const q = randFloat(0.15, 0.45, 2);
+            const p = Number((1 - q).toFixed(2));
+            const hetero = 2 * p * q;
+            const ans = Number((hetero * 100).toFixed(1));
+
+            return {
+              subject: 'biology',
+              topic: 'Genetics & Hardy-Weinberg',
+              level: lvl,
+              title: 'ALLELE FREQUENCY & HETEROZYGOTE CARRIER RATE',
+              prompt: `In a population in Hardy-Weinberg equilibrium, the frequency of a recessive allele $a$ is $q = ${q}$. Calculate the percentage ($2pq \\times 100\\%$) of individuals in the population who are heterozygous carriers ($Aa$).`,
+              unit: '%',
+              answer: ans,
+              options: buildMcqOptions(ans, '%'),
+              hints: [
+                `Find the dominant allele frequency using $p = 1 - q = 1 - ${q} = ${p}$.`,
+                `Heterozygous genotype frequency is $2pq$. Multiply by $100$ for percentage.`
+              ],
+              intuition: `Even when a recessive phenotype ($q^2$) is relatively rare, the heterozygous carrier pool ($2pq$) remains surprisingly large in a randomly mating population.`,
+              derivation: `$$p = 1 - q = 1 - ${q} = ${p}$$
+$$\\text{Frequency}(Aa) = 2pq = 2(${p})(${q}) = ${hetero.toFixed(4)} = ${ans}\\%$$`,
+              diagramType: 'punnett_square',
+              diagramData: { p, q, ans }
+            };
+          }
+        },
+        // Level 4-6: Enzyme Kinetics (Michaelis-Menten)
+        {
+          levels: [4, 5, 6],
+          topic: 'Enzyme Kinetics',
+          generate: (lvl) => {
+            const Vmax = randInt(80, 240);
+            const Km = randFloat(2.0, 10.0, 1);
+            const S = randFloat(3.0, 20.0, 1);
+            const v0 = (Vmax * S) / (Km + S);
+            const ans = Number(v0.toFixed(2));
+
+            return {
+              subject: 'biology',
+              topic: 'Enzyme Kinetics',
+              level: lvl,
+              title: 'MICHAELIS-MENTEN CATALYTIC VELOCITY',
+              prompt: `An enzyme exhibits Michaelis-Menten kinetics with a maximum velocity $V_{\\max} = ${Vmax}\\;\\mu\\text{M/min}$ and a Michaelis constant $K_m = ${Km}\\text{ mM}$. Calculate the initial reaction velocity $v_0$ when the substrate concentration is $[S] = ${S}\\text{ mM}$.`,
+              unit: 'μM/min',
+              answer: ans,
+              options: buildMcqOptions(ans, 'μM/min'),
+              hints: [
+                `Apply the Michaelis-Menten equation: $v_0 = \\frac{V_{\\max}[S]}{K_m + [S]}$.`,
+                `Note that when $[S] = K_m$, the reaction reaches exactly $\\frac{1}{2}V_{\\max}$.`
+              ],
+              intuition: `At low $[S]$, velocity rises linearly because active sites are empty; at high $[S] \\gg K_m$, the enzyme saturates asymptotically toward $V_{\\max}$.`,
+              derivation: `$$v_0 = \\frac{V_{\\max}[S]}{K_m + [S]} = \\frac{(${Vmax})(${S})}{${Km} + ${S}} = \\frac{${(Vmax * S).toFixed(1)}}{${(Km + S).toFixed(1)}} = ${ans}\\;\\mu\\text{M/min}$$`,
+              diagramType: 'michaelis_menten',
+              diagramData: { Vmax, Km, S, v0: ans }
+            };
+          }
+        },
+        // Level 7-10: Biophysics / Nernst Equilibrium Potential
+        {
+          levels: [7, 8, 9, 10],
+          topic: 'Membrane Biophysics',
+          generate: (lvl) => {
+            const cOut = randInt(4, 15); // mM
+            const cIn = randInt(120, 160); // mM
+            // At 37C (310.15K), (RT/F) * ln(out/in) = 26.71 mV * ln(out/in)
+            const E = 26.71 * Math.log(cOut / cIn);
+            const ans = Number(E.toFixed(1));
+
+            return {
+              subject: 'biology',
+              topic: 'Membrane Biophysics',
+              level: lvl,
+              title: 'NERNST EQUILIBRIUM MEMBRANE POTENTIAL',
+              prompt: `A mammalian neuron at physiological temperature ($T = 310.15\\text{ K}$, where $\\frac{RT}{F} = 26.71\\text{ mV}$) has an extracellular potassium concentration $[\\text{K}^+]_{\\text{out}} = ${cOut}\\text{ mM}$ and intracellular concentration $[\\text{K}^+]_{\\text{in}} = ${cIn}\\text{ mM}$. Calculate the Nernst equilibrium potential $E_{\\text{K}}$ in millivolts ($\\text{mV}$).`,
+              unit: 'mV',
+              answer: ans,
+              options: buildMcqOptions(ans, 'mV'),
+              hints: [
+                `For a monovalent cation ($z = +1$), $E_{\\text{ion}} = \\left(\\frac{RT}{zF}\\right) \\ln\\left(\\frac{[\\text{Ion}]_{\\text{out}}}{[\\text{Ion}]_{\\text{in}}}\\right)$.`,
+                `Since $[\\text{K}^+]_{\\text{out}} < [\\text{K}^+]_{\\text{in}}$, the natural logarithm is negative.`
+              ],
+              intuition: `$\text{K}^+$ diffuses out down its concentration gradient until the negative interior electrical potential pulls $\text{K}^+$ back in at an equal and opposite rate.`,
+              derivation: `$$E_{\\text{K}} = (26.71\\text{ mV}) \\ln\\left(\\frac{${cOut}}{${cIn}}\\right) = 26.71 \\times (${Math.log(cOut / cIn).toFixed(3)}) = ${ans}\\text{ mV}$$`,
+              diagramType: 'action_potential',
+              diagramData: { cOut, cIn, E: ans }
+            };
+          }
+        }
+      ]
+    };
+
+    /*************************************************************************
+     * 3. QUESTION SELECTION & UI RENDERING
+     *************************************************************************/
+    function generateNextProblem() {
+      if (appState.activeSubjects.length === 0) {
+        appState.activeSubjects = ['physics'];
+        updateSubjectButtonsUI();
+      }
+
+      // Pick random active subject & target level within user's [minLevel, maxLevel]
+      const subj = appState.activeSubjects[randInt(0, appState.activeSubjects.length - 1)];
+      const targetLvl = randInt(appState.minLevel, appState.maxLevel);
+
+      // Filter generators matching level, or fallback to closest
+      const pool = GENERATORS[subj];
+      let matching = pool.filter(g => g.levels.includes(targetLvl));
+      if (matching.length === 0) matching = pool;
+
+      const chosenGen = matching[randInt(0, matching.length - 1)];
+      currentProblem = chosenGen.generate(targetLvl);
+
+      // Decide question format (MCQ vs Numeric)
+      if (appState.format === 'mixed') {
+        currentProblem.activeFormat = Math.random() < 0.5 ? 'numeric' : 'mcq';
+      } else {
+        currentProblem.activeFormat = appState.format;
+      }
+
+      appState.sequenceCount++;
+      selectedMcqIndex = null;
+      hintsRevealed = 0;
+      isAnswered = false;
+
+      renderCurrentProblem();
+    }
+
+    function renderCurrentProblem() {
+      const p = currentProblem;
+      document.getElementById('q-subject-tag').textContent = p.subject.toUpperCase();
+      document.getElementById('q-topic-tag').textContent = p.topic.toUpperCase();
+      document.getElementById('q-level-tag').textContent = `LVL ${String(p.level).padStart(2, '0')}`;
+      document.getElementById('q-counter').textContent = `SEQ // #${String(appState.sequenceCount).padStart(3, '0')}`;
+      document.getElementById('q-title').textContent = p.title;
+      document.getElementById('q-prompt').innerHTML = p.prompt;
+
+      // Reset Hints & Feedback
+      const hintBox = document.getElementById('q-hint-box');
+      hintBox.classList.add('hidden');
+      hintBox.innerHTML = '';
+      document.getElementById('hint-label').textContent = `HINT [0/${p.hints.length}]`;
+
+      const fbPanel = document.getElementById('q-feedback-panel');
+      fbPanel.classList.add('hidden');
+      fbPanel.innerHTML = '';
+
+      // Render Input Area
+      const inputZone = document.getElementById('q-input-zone');
+      if (p.activeFormat === 'numeric') {
+        inputZone.innerHTML = `
+          <div class="space-y-1.5">
+            <label class="block text-[10px] font-mono uppercase tracking-widest text-muted">
+              NUMERIC RESPONSE (±2% TOLERANCE ACCEPTED)
+            </label>
+            <div class="flex items-center gap-2 max-w-sm">
+              <input type="number" step="any" id="user-numeric-input" placeholder="ENTER VALUE..."
+                     onkeydown="if(event.key==='Enter') submitUserAnswer()"
+                     class="w-full bg-oled border border-white rounded px-3.5 py-2.5 font-mono text-sm text-white focus:border-nred outline-none">
+              ${p.unit ? `<span class="px-3 py-2.5 bg-panel border border-border rounded font-mono text-xs text-muted whitespace-nowrap">${p.unit}</span>` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        inputZone.innerHTML = `
+          <div class="space-y-2">
+            <label class="block text-[10px] font-mono uppercase tracking-widest text-muted">
+              SELECT OPTIMAL SOLUTION
+            </label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${p.options.map((opt, idx) => `
+                <button onclick="selectMcq(${idx})" id="mcq-btn-${idx}"
+                        class="p-3 border border-border bg-oled hover:border-white rounded text-left font-mono text-xs flex items-center justify-between transition">
+                  <span><strong class="text-muted mr-2">[${String.fromCharCode(65 + idx)}]</strong> ${opt.text}</span>
+                  <span class="w-2.5 h-2.5 rounded-full border border-muted mcq-dot"></span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Render Bespoke SVG Schematic
+      renderProblemSchematic(p);
+
+      // Typeset Math with KaTeX
+      typesetMath();
+    }
+
+    function selectMcq(idx) {
+      if (isAnswered) return;
+      selectedMcqIndex = idx;
+      currentProblem.options.forEach((_, i) => {
+        const btn = document.getElementById(`mcq-btn-${i}`);
+        if (!btn) return;
+        const dot = btn.querySelector('.mcq-dot');
+        if (i === idx) {
+          btn.className = 'p-3 border border-nred bg-nred/10 rounded text-left font-mono text-xs flex items-center justify-between transition text-white';
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-nred border border-nred mcq-dot';
+        } else {
+          btn.className = 'p-3 border border-border bg-oled hover:border-white rounded text-left font-mono text-xs flex items-center justify-between transition';
+          if (dot) dot.className = 'w-2.5 h-2.5 rounded-full border border-muted mcq-dot';
+        }
+      });
+    }
+
+    function triggerHint() {
+      const p = currentProblem;
+      if (!p || hintsRevealed >= p.hints.length) return;
+      hintsRevealed++;
+      const hintBox = document.getElementById('q-hint-box');
+      hintBox.classList.remove('hidden');
+      hintBox.innerHTML = p.hints.slice(0, hintsRevealed).map((h, i) => `
+        <div><span class="text-nred font-bold">HINT 0${i + 1}:</span> ${h}</div>
+      `).join('');
+      document.getElementById('hint-label').textContent = `HINT [${hintsRevealed}/${p.hints.length}]`;
+      typesetMath();
+    }
+
+    function submitUserAnswer() {
+      if (isAnswered) return;
+      const p = currentProblem;
+      let isCorrect = false;
+      let userDisplay = '';
+
+      if (p.activeFormat === 'numeric') {
+        const inp = document.getElementById('user-numeric-input');
+        if (!inp || inp.value.trim() === '') return;
+        const val = parseFloat(inp.value);
+        userDisplay = `${val} ${p.unit}`;
+        const tol = Math.max(0.05, Math.abs(p.answer) * 0.02); // ±2% tolerance
+        isCorrect = Math.abs(val - p.answer) <= tol;
+      } else {
+        if (selectedMcqIndex === null) return;
+        const chosen = p.options[selectedMcqIndex];
+        userDisplay = chosen.text;
+        isCorrect = chosen.isCorrect;
+      }
+
+      isAnswered = true;
+
+      // Update Streak & Telemetry
+      if (isCorrect) {
+        appState.currentStreak++;
+        if (appState.currentStreak > appState.bestStreak) {
+          appState.bestStreak = appState.currentStreak;
+        }
+      } else {
+        appState.currentStreak = 0;
+      }
+
+      const subjStat = appState.telemetry[p.subject];
+      if (subjStat) {
+        subjStat.solved++;
+        if (isCorrect) subjStat.correct++;
+      }
+      if (!appState.telemetry.topics[p.topic]) {
+        appState.telemetry.topics[p.topic] = { solved: 0, correct: 0, subject: p.subject };
+      }
+      appState.telemetry.topics[p.topic].solved++;
+      if (isCorrect) appState.telemetry.topics[p.topic].correct++;
+
+      saveTelemetry();
+
+      // Render Comprehensive Feedback (Shown whether Right or Wrong!)
+      const fb = document.getElementById('q-feedback-panel');
+      fb.classList.remove('hidden');
+      fb.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded border ${
+          isCorrect ? 'border-white bg-white/5' : 'border-nred bg-nred/10'
+        }">
+          <div class="flex items-center gap-2.5 font-mono text-xs font-bold">
+            <span class="px-2 py-0.5 rounded-sm ${isCorrect ? 'bg-white text-black' : 'bg-nred text-white'}">
+              ${isCorrect ? 'STATUS // VERIFIED CORRECT' : 'STATUS // DEVIATION DETECTED'}
+            </span>
+            <span class="text-muted">YOUR INPUT: <strong class="text-white">${userDisplay}</strong></span>
+          </div>
+          <div class="font-mono text-xs">
+            EXACT TARGET: <strong class="text-nred">${p.answer} ${p.unit}</strong>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 p-3.5 bg-oled border border-border rounded space-y-1.5">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-nred font-bold">
+              PHYSICAL & CONCEPTUAL INTUITION
+            </div>
+            <p class="text-xs text-neutral-300 leading-relaxed">${p.intuition}</p>
+          </div>
+
+          <div class="md:col-span-7 p-3.5 bg-oled border border-border rounded space-y-1.5 overflow-x-auto">
+            <div class="text-[10px] font-mono uppercase tracking-widest text-white font-bold">
+              STEP-BY-STEP ANALYTICAL DERIVATION
+            </div>
+            <div class="text-xs text-neutral-200 space-y-1">${p.derivation}</div>
+          </div>
+        </div>
+      `;
+
+      typesetMath();
+    }
+
+    /*************************************************************************
+     * 4. DYNAMIC VECTOR / SVG SCHEMATIC GENERATOR (100% OFFLINE)
+     *************************************************************************/
+    function renderProblemSchematic(p) {
+      const box = document.getElementById('q-diagram-container');
+      const cap = document.getElementById('fig-caption');
+      cap.textContent = p.diagramType.toUpperCase() + '.SVG';
+      const d = p.diagramData;
+
+      if (p.diagramType === 'incline') {
+        const rad = (d.theta * Math.PI) / 180;
+        const baseW = 190;
+        const h = Math.min(130, Math.round(baseW * Math.tan(rad)));
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <!-- Ramp Triangle -->
+            <polygon points="30,155 ${30 + baseW},155 30,${155 - h}" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <!-- Angle Arc -->
+            <text x="${30 + baseW - 48}" y="148" fill="#8e918f" font-family="Inter, sans-serif" font-size="10">${d.theta}°</text>
+            <!-- Block on Incline -->
+            <g transform="translate(95, ${155 - h * 0.55}) rotate(${d.theta * 0.85})">
+              <rect x="-18" y="-26" width="36" height="26" fill="#131314" stroke="#d71921" stroke-width="2"/>
+              <text x="-10" y="-9" fill="#ffffff" font-family="Inter, sans-serif" font-size="9">${d.m}kg</text>
+              <!-- Force Vector Down Slope -->
+              <line x1="18" y1="-13" x2="56" y2="-13" stroke="#d71921" stroke-width="2"/>
+              <polygon points="56,-16 62,-13 56,-10" fill="#d71921"/>
+            </g>
+            <text x="15" y="20" fill="#8e918f" font-family="JetBrains Mono, monospace" font-size="9">μ=${d.mu} | a=${d.accel}m/s²</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'projectile') {
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <line x1="20" y1="150" x2="245" y2="150" stroke="#8e918f" stroke-width="1.5"/>
+            <!-- Parabolic Arc -->
+            <path d="M 25 150 Q 130 25 235 150" fill="none" stroke="#d71921" stroke-width="2.5" stroke-dasharray="4 2"/>
+            <!-- Initial Velocity Vector -->
+            <line x1="25" y1="150" x2="70" y2="95" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="25" cy="150" r="4" fill="#d71921"/>
+            <circle cx="235" cy="150" r="4" fill="#ffffff"/>
+            <text x="35" y="142" fill="#ffffff" font-family="Inter, sans-serif" font-size="10">θ=${d.angle}°</text>
+            <text x="20" y="24" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">v₀ = ${d.v0} m/s</text>
+            <text x="105" y="168" fill="#d71921" font-family="JetBrains Mono, monospace" font-size="10">R = ? m</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'rc_decay' || p.diagramType === 'slope_field') {
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <line x1="30" y1="20" x2="30" y2="150" stroke="#8e918f" stroke-width="1.5"/>
+            <line x1="30" y1="150" x2="240" y2="150" stroke="#8e918f" stroke-width="1.5"/>
+            <path d="M 30 35 C 75 115, 135 142, 235 148" fill="none" stroke="#d71921" stroke-width="2.5"/>
+            <circle cx="95" cy="106" r="4" fill="#ffffff"/>
+            <line x1="95" y1="106" x2="95" y2="150" stroke="#ffffff" stroke-dasharray="3 3"/>
+            <text x="36" y="32" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">Y(0)</text>
+            <text x="80" y="165" fill="#d71921" font-family="JetBrains Mono, monospace" font-size="10">t_eval</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'damped_wave') {
+        let pts = [];
+        for (let x = 0; x <= 200; x += 3) {
+          const t = x / 25;
+          const y = 85 - 55 * Math.exp(-0.35 * t) * Math.cos(2.8 * t);
+          pts.push(`${30 + x},${y.toFixed(1)}`);
+        }
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <line x1="30" y1="85" x2="235" y2="85" stroke="#444" stroke-width="1"/>
+            <line x1="30" y1="20" x2="30" y2="155" stroke="#8e918f" stroke-width="1.5"/>
+            <polyline points="${pts.join(' ')}" fill="none" stroke="#d71921" stroke-width="2"/>
+            <text x="120" y="25" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">ω_d = ${d.omegaD} rad/s</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'trig_triangle') {
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <polygon points="40,145 215,145 145,40" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <path d="M 65 145 A 25 25 0 0 0 55 125" fill="none" stroke="#d71921" stroke-width="2"/>
+            <text x="72" y="138" fill="#d71921" font-family="Inter, sans-serif" font-size="10">γ=${d.angleC}°</text>
+            <text x="120" y="162" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">b = ${d.b}</text>
+            <text x="68" y="85" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">a = ${d.a}</text>
+            <text x="188" y="88" fill="#d71921" font-family="JetBrains Mono, monospace" font-size="10">c = ?</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'integral_curve') {
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <path d="M 40 150 Q 120 140 200 35 L 200 150 Z" fill="rgba(215,25,33,0.22)" stroke="none"/>
+            <path d="M 40 150 Q 120 140 200 35" fill="none" stroke="#d71921" stroke-width="2.5"/>
+            <line x1="30" y1="150" x2="235" y2="150" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="40" y1="20" x2="40" y2="160" stroke="#ffffff" stroke-width="1.5"/>
+            <text x="190" y="166" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">x=${d.upper}</text>
+            <text x="95" y="115" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">∫ f(x)dx</text>
+          </svg>
+        `;
+      } else if (p.diagramType === 'punnett_square') {
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <rect x="65" y="30" width="130" height="120" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <line x1="130" y1="30" x2="130" y2="150" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="65" y1="90" x2="195" y2="90" stroke="#ffffff" stroke-width="1.5"/>
+            <text x="85" y="65" fill="#8e918f" font-family="Inter, sans-serif" font-size="12">AA (p²)</text>
+            <text x="142" y="65" fill="#d71921" font-family="Inter, sans-serif" font-size="12" font-weight="bold">Aa (pq)</text>
+            <text x="80" y="125" fill="#d71921" font-family="Inter, sans-serif" font-size="12" font-weight="bold">Aa (pq)</text>
+            <text x="142" y="125" fill="#8e918f" font-family="Inter, sans-serif" font-size="12">aa (q²)</text>
+            <text x="65" y="20" fill="#ffffff" font-family="JetBrains Mono, monospace" font-size="10">p=${d.p} | q=${d.q}</text>
+          </svg>
+        `;
+      } else {
+        // Default Saturation / Isotherm / Kinetics schematic
+        box.innerHTML = `
+          <svg viewBox="0 0 260 180" class="w-full h-full">
+            <line x1="35" y1="25" x2="35" y2="150" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="35" y1="150" x2="235" y2="150" stroke="#ffffff" stroke-width="1.5"/>
+            <line x1="35" y1="40" x2="235" y2="40" stroke="#8e918f" stroke-dasharray="4 4"/>
+            <path d="M 35 150 Q 65 45 230 43" fill="none" stroke="#d71921" stroke-width="2.5"/>
+            <text x="42" y="35" fill="#8e918f" font-family="Inter, sans-serif" font-size="9">ASYMPTOTE / MAX</text>
+            <text x="120" y="166" fill="#ffffff" font-family="Inter, sans-serif" font-size="10">PARAMETER AXIS</text>
+          </svg>
+        `;
+      }
+    }
+
+    /*************************************************************************
+     * 5. CONTROLS: SUBJECT MULTI-SELECT, DIFFICULTY 1-10, MODES
+     *************************************************************************/
+    function toggleConfigPanel() {
+      const body = document.getElementById('config-matrix-body');
+      const chev = document.getElementById('config-chevron');
+      body.classList.toggle('hidden');
+      chev.classList.toggle('rotate-180');
+    }
+
+    function toggleSubject(subj) {
+      const idx = appState.activeSubjects.indexOf(subj);
+      if (idx > -1) {
+        if (appState.activeSubjects.length > 1) {
+          appState.activeSubjects.splice(idx, 1);
+        }
+      } else {
+        appState.activeSubjects.push(subj);
+      }
+      updateSubjectButtonsUI();
+      generateNextProblem();
+    }
+
+    function updateSubjectButtonsUI() {
+      ['physics', 'math', 'chemistry', 'biology'].forEach(s => {
+        const btn = document.getElementById(`subj-btn-${s}`);
+        const active = appState.activeSubjects.includes(s);
+        btn.className = active
+          ? 'px-3 py-2 rounded border border-white bg-white text-black font-mono text-xs font-bold flex items-center justify-between transition'
+          : 'px-3 py-2 rounded border border-border bg-oled text-muted font-mono text-xs flex items-center justify-between transition';
+      });
+      document.getElementById('summary-subjects').textContent =
+        appState.activeSubjects.map(s => s.slice(0, 4).toUpperCase()).join(' + ');
+    }
+
+    function updateLevelRange() {
+      let minV = parseInt(document.getElementById('min-level-slider').value);
+      let maxV = parseInt(document.getElementById('max-level-slider').value);
+      if (minV > maxV) {
+        const tmp = minV;
+        minV = maxV;
+        maxV = tmp;
+      }
+      appState.minLevel = minV;
+      appState.maxLevel = maxV;
+      document.getElementById('min-level-val').textContent = minV;
+      document.getElementById('max-level-val').textContent = maxV;
+      document.getElementById('summary-level').textContent = `LVL ${minV}-${maxV}`;
+
+      let tierLabel = 'FOUNDATION (HS / 1010)';
+      if (maxV >= 7) tierLabel = 'UPPER-DIVISION COLLEGE';
+      else if (maxV >= 4) tierLabel = 'LOWER-DIVISION CORE';
+      document.getElementById('level-tier-badge').textContent = `LVL ${minV}-${maxV} // ${tierLabel}`;
+    }
+
+    function updateFormat(fmt) {
+      appState.format = fmt;
+      generateNextProblem();
+    }
+
+    function changeStudyMode(mode) {
+      appState.mode = mode;
+      document.getElementById('summary-mode').textContent = mode.toUpperCase();
+      clearInterval(timerInterval);
+      const pill = document.getElementById('header-timer-pill');
+
+      if (mode === 'practice') {
+        pill.classList.add('hidden');
+      } else {
+        pill.classList.remove('hidden');
+        pill.classList.add('flex');
+        timerSeconds = mode === 'exam' ? 600 : 0;
+        timerInterval = setInterval(() => {
+          if (mode === 'exam') {
+            timerSeconds = Math.max(0, timerSeconds - 1);
+          } else {
+            timerSeconds++;
+          }
+          const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+          const s = String(timerSeconds % 60).padStart(2, '0');
+          document.getElementById('timer-display').textContent = `${m}:${s}`;
+        }, 1000);
+      }
+      generateNextProblem();
+    }
+
+    /*************************************************************************
+     * 6. DRAWERS: SCIENTIFIC & 2D GRAPHING CALCULATOR, SCRATCHPAD, STATS
+     *************************************************************************/
+    function openDrawer(id) {
+      closeDrawers();
+      document.getElementById(id).classList.remove('hidden');
+      if (id === 'scratch-drawer') setTimeout(initScratchCanvas, 50);
+      if (id === 'calc-drawer') setTimeout(drawGraphPlot, 50);
+      if (id === 'stats-drawer') renderStatsDrawer();
+      typesetMath();
+    }
+
+    function closeDrawers() {
+      ['calc-drawer', 'formula-drawer', 'scratch-drawer', 'stats-drawer'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+    }
+
+    function switchCalcTab(tab) {
+      const isSci = tab === 'sci';
+      document.getElementById('calc-tab-sci').classList.toggle('hidden', !isSci);
+      document.getElementById('calc-tab-graph').classList.toggle('hidden', isSci);
+      document.getElementById('tab-btn-sci').className = isSci
+        ? 'py-2.5 bg-white text-black font-bold'
+        : 'py-2.5 bg-oled text-muted hover:text-white';
+      document.getElementById('tab-btn-graph').className = !isSci
+        ? 'py-2.5 bg-white text-black font-bold'
+        : 'py-2.5 bg-oled text-muted hover:text-white';
+      if (!isSci) setTimeout(drawGraphPlot, 50);
+    }
+
+    // Safe Math Expression Evaluator
+    function safeEvalMath(expr, xVal = 0) {
+      let clean = expr.toLowerCase()
+        .replace(/\^/g, '**')
+        .replace(/pi/g, 'Math.PI')
+        .replace(/\be\b/g, 'Math.E')
+        .replace(/sin\(/g, 'Math.sin(')
+        .replace(/cos\(/g, 'Math.cos(')
+        .replace(/tan\(/g, 'Math.tan(')
+        .replace(/sqrt\(/g, 'Math.sqrt(')
+        .replace(/ln\(/g, 'Math.log(')
+        .replace(/log\(/g, 'Math.log10(')
+        .replace(/\bx\b/g, `(${xVal})`);
+      return Function(`"use strict"; return (${clean});`)();
+    }
+
+    function insSci(token) {
+      const inp = document.getElementById('sci-input');
+      inp.value += token;
+      inp.focus();
+    }
+    function clearSci() {
+      document.getElementById('sci-input').value = '';
+      document.getElementById('sci-result').textContent = '= 0';
+    }
+    function evalSciCalc() {
+      const inp = document.getElementById('sci-input');
+      const expr = inp.value.trim();
+      if (!expr) return;
+      try {
+        const res = safeEvalMath(expr);
+        const formatted = Number.isFinite(res) ? Number(res.toPrecision(8)) : 'ERR';
+        document.getElementById('sci-result').textContent = `= ${formatted}`;
+        const hist = document.getElementById('sci-history');
+        hist.innerHTML += `<div>${expr} = <span class="text-white">${formatted}</span></div>`;
+        hist.scrollTop = hist.scrollHeight;
+      } catch (e) {
+        document.getElementById('sci-result').textContent = 'SYNTAX ERR';
+      }
+    }
+
+    // 2D Function Plotter
+    let graphDomain = 10;
+    function zoomGraph(factor) {
+      graphDomain = Math.max(2, Math.min(50, Number((graphDomain * factor).toFixed(1))));
+      document.getElementById('plot-range-label').textContent = `[-${graphDomain}, ${graphDomain}]`;
+      drawGraphPlot();
+    }
+    function resetGraphZoom() {
+      graphDomain = 10;
+      document.getElementById('plot-range-label').textContent = `[-10, 10]`;
+      drawGraphPlot();
+    }
+
+    function drawGraphPlot() {
+      const canvas = document.getElementById('graph-canvas');
+      if (!canvas || canvas.clientWidth === 0) return;
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, w, h);
+
+      // Grid & Axes
+      ctx.strokeStyle = '#1f1f1f';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 10; i++) {
+        ctx.beginPath();
+        ctx.moveTo((w * i) / 10, 0); ctx.lineTo((w * i) / 10, h);
+        ctx.moveTo(0, (h * i) / 10); ctx.lineTo(w, (h * i) / 10);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = '#555555';
+      ctx.beginPath();
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.stroke();
+
+      const fxStr = document.getElementById('plot-fx').value;
+      const gxStr = document.getElementById('plot-gx').value;
+
+      [
+        { expr: fxStr, color: '#d71921' },
+        { expr: gxStr, color: '#ffffff' }
+      ].forEach(curve => {
+        if (!curve.expr.trim()) return;
+        ctx.strokeStyle = curve.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        let started = false;
+        for (let px = 0; px <= w; px += 2) {
+          const x = ((px - w / 2) / (w / 2)) * graphDomain;
+          try {
+            const y = safeEvalMath(curve.expr, x);
+            if (Number.isFinite(y)) {
+              const py = h / 2 - (y / graphDomain) * (h / 2);
+              if (!started) {
+                ctx.moveTo(px, py);
+                started = true;
+              } else {
+                ctx.lineTo(px, py);
+              }
+            }
+          } catch (e) {}
+        }
+        ctx.stroke();
+      });
+    }
+
+    // Scratchpad Canvas
+    let scratchCtx = null;
+    let isScratchDrawing = false;
+    let scratchColor = '#ffffff';
+    let scratchHistory = [];
+
+    function initScratchCanvas() {
+      const c = document.getElementById('scratch-canvas');
+      const wrap = document.getElementById('scratch-wrapper');
+      if (!c || !wrap) return;
+      if (c.width !== wrap.clientWidth || c.height !== wrap.clientHeight) {
+        c.width = wrap.clientWidth;
+        c.height = wrap.clientHeight;
+      }
+      scratchCtx = c.getContext('2d');
+
+      c.onpointerdown = (e) => {
+        isScratchDrawing = true;
+        if (scratchHistory.length > 15) scratchHistory.shift();
+        scratchHistory.push(c.toDataURL());
+        const r = c.getBoundingClientRect();
+        scratchCtx.beginPath();
+        scratchCtx.moveTo(e.clientX - r.left, e.clientY - r.top);
+      };
+      c.onpointermove = (e) => {
+        if (!isScratchDrawing) return;
+        const r = c.getBoundingClientRect();
+        scratchCtx.strokeStyle = scratchColor;
+        scratchCtx.lineWidth = 2.5;
+        scratchCtx.lineCap = 'round';
+        scratchCtx.lineTo(e.clientX - r.left, e.clientY - r.top);
+        scratchCtx.stroke();
+      };
+      c.onpointerup = () => { isScratchDrawing = false; };
+    }
+
+    function setScratchColor(col) { scratchColor = col; }
+    function clearScratch() {
+      const c = document.getElementById('scratch-canvas');
+      if (scratchCtx && c) scratchCtx.clearRect(0, 0, c.width, c.height);
+    }
+    function undoScratch() {
+      const c = document.getElementById('scratch-canvas');
+      if (!scratchHistory.length || !scratchCtx) return;
+      const img = new Image();
+      img.src = scratchHistory.pop();
+      img.onload = () => {
+        scratchCtx.clearRect(0, 0, c.width, c.height);
+        scratchCtx.drawImage(img, 0, 0);
+      };
+    }
+
+    // Formula Search Filter
+    function filterFormulaCodex(q) {
+      const term = q.toLowerCase();
+      document.querySelectorAll('.codex-block').forEach(b => {
+        b.style.display = b.innerText.toLowerCase().includes(term) ? 'block' : 'none';
+      });
+    }
+
+    // Telemetry & Weak-Point Renderer
+    function renderStatsDrawer() {
+      let totalSolved = 0;
+      let totalCorrect = 0;
+      const barsHtml = ['physics', 'math', 'chemistry', 'biology'].map(s => {
+        const d = appState.telemetry[s] || { solved: 0, correct: 0 };
+        totalSolved += d.solved;
+        totalCorrect += d.correct;
+        const pct = d.solved > 0 ? Math.round((d.correct / d.solved) * 100) : 0;
+        return `
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="uppercase font-bold">${s}</span>
+              <span class="text-muted">${d.correct}/${d.solved} (${pct}%)</span>
+            </div>
+            <div class="w-full h-2 bg-oled border border-border rounded overflow-hidden">
+              <div class="h-full bg-nred" style="width:${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('stat-total-solved').textContent = totalSolved;
+      document.getElementById('stat-total-acc').textContent =
+        totalSolved > 0 ? `${Math.round((totalCorrect / totalSolved) * 100)}%` : '0%';
+      document.getElementById('stat-best-streak').textContent = appState.bestStreak;
+      document.getElementById('subject-telemetry-bars').innerHTML = barsHtml;
+
+      // Identify Weak Topics (<70% accuracy)
+      const topics = Object.entries(appState.telemetry.topics || {});
+      const weak = topics
+        .filter(([_, data]) => data.solved >= 1 && (data.correct / data.solved) < 0.75)
+        .sort((a, b) => (a[1].correct / a[1].solved) - (b[1].correct / b[1].solved));
+
+      const weakContainer = document.getElementById('weak-points-list');
+      if (weak.length === 0) {
+        weakContainer.innerHTML = `<div class="text-muted">No critical weak points flagged yet. Keep practicing!</div>`;
+      } else {
+        weakContainer.innerHTML = weak.map(([name, d]) => {
+          const acc = Math.round((d.correct / d.solved) * 100);
+          return `<div class="flex justify-between border-b border-border/60 py-1">
+            <span>${name}</span>
+            <span class="text-nred font-bold">${acc}% (${d.correct}/${d.solved})</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    function exportTelemetryJSON() {
+      const jsonStr = JSON.stringify(appState, null, 2);
+      copyTextToClipboard(jsonStr);
+      const viewer = document.getElementById('backup-export-viewer');
+      const area = document.getElementById('backup-export-textarea');
+      if (viewer && area) {
+        viewer.classList.remove('hidden');
+        area.value = jsonStr;
+      }
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      triggerDownload(blob, 'nothing_stem_backup.json');
+    }
+
+    function importExternalJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.telemetry) appState.telemetry = parsed.telemetry;
+          if (Array.isArray(parsed.questions)) {
+            appState.customBank.push(...parsed.questions);
+          }
+          saveTelemetry();
+          renderStatsDrawer();
+        } catch (err) {}
+      };
+      reader.readAsText(file);
+    }
+
+    function wipeTelemetry() {
+      appState.telemetry = {
+        physics: { solved: 0, correct: 0 },
+        math: { solved: 0, correct: 0 },
+        chemistry: { solved: 0, correct: 0 },
+        biology: { solved: 0, correct: 0 },
+        topics: {}
+      };
+      appState.currentStreak = 0;
+      appState.bestStreak = 0;
+      saveTelemetry();
+      renderStatsDrawer();
+    }
+
+    /*************************************************************************
+     * 7. ONE-CLICK PWA OFFLINE EXPORTER (index.html, manifest.json, sw.js)
+     *************************************************************************/
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function copyTextToClipboard(text) {
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {}
+      document.body.removeChild(temp);
+    }
+
+    function copyViewerText() {
+      const area = document.getElementById('pwa-viewer-textarea');
+      if (!area) return;
+      area.select();
+      copyTextToClipboard(area.value);
+      const title = document.getElementById('pwa-viewer-title');
+      if (title) title.textContent = '✓ COPIED TO CLIPBOARD!';
+    }
+
+    function triggerDownload(blob, filename) {
+      try {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {}
+    }
+
+    // Snapshot clean initial HTML before dynamic DOM mutations
+    let cleanInitialHtml = '';
+    window.addEventListener('DOMContentLoaded', () => {
+      cleanInitialHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    });
+
+    function exportPWAFile(type) {
+      let content = '';
+      let mime = 'text/plain';
+
+      if (type === 'index.html') {
+        content = cleanInitialHtml || ('<!DOCTYPE html>\n' + document.documentElement.outerHTML);
+        mime = 'text/html';
+      } else if (type === 'manifest.json') {
+        const manifest = {
+          name: "NOTHING // STEM.OS",
+          short_name: "STEM.OS",
+          start_url: "./index.html",
+          display: "standalone",
+          background_color: "#000000",
+          theme_color: "#000000",
+          orientation: "portrait-primary",
+          icons: [
+            {
+              src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='50' r='28' fill='%23d71921'/></svg>",
+              sizes: "192x192",
+              type: "image/svg+xml"
+            },
+            {
+              src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><circle cx='50' cy='50' r='28' fill='%23d71921'/></svg>",
+              sizes: "512x512",
+              type: "image/svg+xml"
+            }
+          ]
+        };
+        content = JSON.stringify(manifest, null, 2);
+        mime = 'application/json';
+      } else if (type === 'sw.js') {
+        content = `const CACHE_NAME = 'nothing-stem-os-v1';
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js',
+  'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js'
+];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+});`;
+        mime = 'application/javascript';
+      }
+
+      // 1. Copy immediately to clipboard (works inside sandboxed iframes)
+      copyTextToClipboard(content);
+
+      // 2. Show inside the modal's code viewer for easy inspection/selection
+      const viewer = document.getElementById('pwa-code-viewer');
+      const textarea = document.getElementById('pwa-viewer-textarea');
+      const title = document.getElementById('pwa-viewer-title');
+      if (viewer && textarea && title) {
+        viewer.classList.remove('hidden');
+        textarea.value = content;
+        title.textContent = `✓ ${type.toUpperCase()} COPIED TO CLIPBOARD!`;
+      }
+
+      // 3. Also attempt standard browser download if outside sandbox
+      triggerDownload(new Blob([content], { type: mime }), type);
+    }
+
+    function typesetMath() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    // Register Service Worker if hosted
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Boot Application
+    window.addEventListener('DOMContentLoaded', () => {
+      loadTelemetry();
+      updateLevelRange();
+      generateNextProblem();
+    });
+  </script>
+
+</body></html>
